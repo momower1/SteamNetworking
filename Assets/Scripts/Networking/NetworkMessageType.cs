@@ -5,9 +5,9 @@
         PingPong,
         StartGame,
         Initialization,
-        ServerObject,
-        ServerObjectList,
-        DestroyServerObject,
+        NetworkObject,
+        NetworkObjectList,
+        DestroyNetworkObject,
         NetworkBehaviour,
         NetworkBehaviourInitialized
     };

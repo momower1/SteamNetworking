@@ -8,7 +8,7 @@ namespace MastersOfTempest.Networking
     public class MessageNetworkBehaviour
     {
         // Fixed size
-        public int serverID;                                        // 4 bytes
+        public int networkID;                                       // 4 bytes
         public int index;                                           // 4 bytes
 
         // Dynamic size
@@ -19,9 +19,9 @@ namespace MastersOfTempest.Networking
             // Empty constructor
         }
 
-        public MessageNetworkBehaviour(int serverID, int index, byte[] data)
+        public MessageNetworkBehaviour(int networkID, int index, byte[] data)
         {
-            this.serverID = serverID;
+            this.networkID = networkID;
             this.index = index;
             this.data = data;
         }
@@ -31,7 +31,7 @@ namespace MastersOfTempest.Networking
             ArrayList bytes = new ArrayList();
 
             // Fixed size
-            bytes.AddRange(BitConverter.GetBytes(serverID));
+            bytes.AddRange(BitConverter.GetBytes(networkID));
             bytes.AddRange(BitConverter.GetBytes(index));
 
             // Dynamic size
@@ -46,7 +46,7 @@ namespace MastersOfTempest.Networking
             MessageNetworkBehaviour messageNetworkBehaviour = new MessageNetworkBehaviour();
 
             // Fixed size
-            messageNetworkBehaviour.serverID = BitConverter.ToInt32(data, startIndex);
+            messageNetworkBehaviour.networkID = BitConverter.ToInt32(data, startIndex);
             messageNetworkBehaviour.index = BitConverter.ToInt32(data, startIndex + 4);
 
             // Dynamic size

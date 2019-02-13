@@ -5,17 +5,17 @@ using UnityEditor;
 
 namespace MastersOfTempest.Networking
 {
-    public class EditorServerObjectManager
+    public class EditorNetworkObjectManager
     {
         [InitializeOnLoadMethod]
-        static void AssignServerObjectResourceIDs()
+        static void AssignNetworkObjectResourceIDs()
         {
-            // Assign a resource id to each server object but make sure not to change already assigned ids
-            ServerObject[] serverObjectResources = Resources.LoadAll<ServerObject>("ServerObjects/");
+            // Assign a resource id to each network object but make sure not to change already assigned ids
+            NetworkObject[] networkObjectResources = Resources.LoadAll<NetworkObject>("NetworkObjects/");
 
-            Dictionary<int, ServerObject> alreadyAssignedResourceIDs = new Dictionary<int, ServerObject>();
+            Dictionary<int, NetworkObject> alreadyAssignedResourceIDs = new Dictionary<int, NetworkObject>();
 
-            foreach (ServerObject s in serverObjectResources)
+            foreach (NetworkObject s in networkObjectResources)
             {
                 // Assign resource id
                 if (s.resourceID > 0 && !alreadyAssignedResourceIDs.ContainsKey(s.resourceID))
@@ -30,7 +30,7 @@ namespace MastersOfTempest.Networking
                 }
 
                 // Assign children and resource id as -(1 + childId)
-                List<ServerObject> children = new List<ServerObject>();
+                List<NetworkObject> children = new List<NetworkObject>();
                 s.GetComponentsInChildren(true, children);
                 children.Remove(s);
 
@@ -38,7 +38,7 @@ namespace MastersOfTempest.Networking
 
                 for (int i = 0; i < s.children.Length; i++)
                 {
-                    ServerObject child = s.children[i];
+                    NetworkObject child = s.children[i];
                     int resourceIdAsChildId = -(1 + i);
 
                     if (child.resourceID != resourceIdAsChildId || child.root != s)
@@ -60,7 +60,7 @@ namespace MastersOfTempest.Networking
 
             int nextIdToAssign = 1;
 
-            foreach (ServerObject s in serverObjectResources)
+            foreach (NetworkObject s in networkObjectResources)
             {
                 while (alreadyAssignedResourceIDs.ContainsKey(nextIdToAssign))
                 {

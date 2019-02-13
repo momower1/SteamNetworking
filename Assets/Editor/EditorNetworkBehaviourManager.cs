@@ -10,13 +10,13 @@ namespace MastersOfTempest.Networking
         [InitializeOnLoadMethod]
         static void SetNetworkBehaviourIndices()
         {
-            ServerObject[] serverObjects = Resources.LoadAll<ServerObject>("ServerObjects/");
+            NetworkObject[] networkObjects = Resources.LoadAll<NetworkObject>("NetworkObjects/");
 
-            foreach (ServerObject s in serverObjects)
+            foreach (NetworkObject s in networkObjects)
             {
-                ServerObject[] children = s.GetComponentsInChildren<ServerObject>();
+                NetworkObject[] children = s.GetComponentsInChildren<NetworkObject>();
 
-                foreach (ServerObject c in children)
+                foreach (NetworkObject c in children)
                 {
                     NetworkBehaviour[] networkBehaviours = c.GetComponents<NetworkBehaviour>();
 

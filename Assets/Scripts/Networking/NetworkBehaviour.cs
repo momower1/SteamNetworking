@@ -5,13 +5,13 @@ using UnityEngine;
 
 namespace MastersOfTempest.Networking
 {
-    [RequireComponent(typeof(ServerObject))]
+    [RequireComponent(typeof(NetworkObject))]
     public abstract class NetworkBehaviour : MonoBehaviour
     {
         protected bool initialized = false;
-        protected ServerObject serverObject;
+        protected NetworkObject networkObject;
 
-        // The index of this NetworkBehaviour component attached to the server object, set by editor script
+        // The index of this NetworkBehaviour component attached to the network object, set by editor script
         [SerializeField, HideInInspector]
         public int index = -1;
         private HashSet<ulong> clientsReadyForInitialization = new HashSet<ulong>();
@@ -19,17 +19,17 @@ namespace MastersOfTempest.Networking
         protected virtual void Start()
         {
             initialized = false;
-            serverObject = GetComponent<ServerObject>();
+            networkObject = GetComponent<NetworkObject>();
 
             if (index < 0)
             {
                 Debug.LogError("Index of a NetworkBehaviour attached to\"" + gameObject.name + "\" is not valid!");
             }
 
-            // NetworkBehaviour messages are managed by the GameClient, GameServer and their ServerObjects
-            serverObject.AddNetworkBehaviourEvents(index, OnReceivedMessageRaw, OnNetworkBehaviourInitialized);
+            // NetworkBehaviour messages are managed by the GameClient, GameServer and their NetworkObjects
+            networkObject.AddNetworkBehaviourEvents(index, OnReceivedMessageRaw, OnNetworkBehaviourInitialized);
 
-            if (!serverObject.onServer)
+            if (!networkObject.onServer)
             {
                 // Begin the initialization, tell the server that this object is ready
                 StartCoroutine(SendNetworkBehaviourInitializedMessage());
@@ -40,7 +40,7 @@ namespace MastersOfTempest.Networking
         {
             if (initialized)
             {
-                if (serverObject.onServer)
+                if (networkObject.onServer)
                 {
                     UpdateServer();
                 }
@@ -61,7 +61,7 @@ namespace MastersOfTempest.Networking
             }
 
             // The NetworkBehaviour on the server has to be sure that this object spawned and listens to messages from the server
-            MessageNetworkBehaviourInitialized message = new MessageNetworkBehaviourInitialized(serverObject.serverID, index);
+            MessageNetworkBehaviourInitialized message = new MessageNetworkBehaviourInitialized(networkObject.networkID, index);
             NetworkManager.Instance.SendToServer(ByteSerializer.GetBytes(message), NetworkMessageType.NetworkBehaviourInitialized, Facepunch.Steamworks.Networking.SendType.Reliable);
         }
 
@@ -69,7 +69,7 @@ namespace MastersOfTempest.Networking
         {
             if (!initialized)
             {
-                if (serverObject.onServer)
+                if (networkObject.onServer)
                 {
                     // Only initialize if all clients are ready
                     bool allClientsReady = true;
@@ -90,7 +90,7 @@ namespace MastersOfTempest.Networking
                     {
                         // All clients are ready to be initialized, send a message to initialize all of them at the same time
                         initialized = true;
-                        MessageNetworkBehaviourInitialized message = new MessageNetworkBehaviourInitialized(serverObject.serverID, index);
+                        MessageNetworkBehaviourInitialized message = new MessageNetworkBehaviourInitialized(networkObject.networkID, index);
                         NetworkManager.Instance.SendToAllClients(ByteSerializer.GetBytes(message), NetworkMessageType.NetworkBehaviourInitialized, Facepunch.Steamworks.Networking.SendType.Reliable);
                         StartServer();
                     }
@@ -105,7 +105,7 @@ namespace MastersOfTempest.Networking
 
         private void OnReceivedMessageRaw(byte[] data, ulong steamID)
         {
-            if (serverObject.onServer)
+            if (networkObject.onServer)
             {
                 OnServerReceivedMessageRaw(data, steamID);
             }
@@ -117,7 +117,7 @@ namespace MastersOfTempest.Networking
 
         protected void SendToServer(byte[] data, Facepunch.Steamworks.Networking.SendType sendType)
         {
-            MessageNetworkBehaviour message = new MessageNetworkBehaviour(serverObject.serverID, index, data);
+            MessageNetworkBehaviour message = new MessageNetworkBehaviour(networkObject.networkID, index, data);
             NetworkManager.Instance.SendToServer(message.ToBytes(), NetworkMessageType.NetworkBehaviour, sendType);
         }
 
@@ -129,7 +129,7 @@ namespace MastersOfTempest.Networking
 
         protected void SendToClient(ulong steamID, byte[] data, Facepunch.Steamworks.Networking.SendType sendType)
         {
-            MessageNetworkBehaviour message = new MessageNetworkBehaviour(serverObject.serverID, index, data);
+            MessageNetworkBehaviour message = new MessageNetworkBehaviour(networkObject.networkID, index, data);
             NetworkManager.Instance.SendToClient(steamID, message.ToBytes(), NetworkMessageType.NetworkBehaviour, sendType);
         }
 
@@ -140,7 +140,7 @@ namespace MastersOfTempest.Networking
 
         protected void SendToAllClients(byte[] data, Facepunch.Steamworks.Networking.SendType sendType)
         {
-            MessageNetworkBehaviour message = new MessageNetworkBehaviour(serverObject.serverID, index, data);
+            MessageNetworkBehaviour message = new MessageNetworkBehaviour(networkObject.networkID, index, data);
             NetworkManager.Instance.SendToAllClients(message.ToBytes(), NetworkMessageType.NetworkBehaviour, sendType);
         }
 
@@ -151,9 +151,9 @@ namespace MastersOfTempest.Networking
 
         protected void OnDestroy()
         {
-            serverObject.RemoveNetworkBehaviourEvents(index);
+            networkObject.RemoveNetworkBehaviourEvents(index);
 
-            if (serverObject.onServer)
+            if (networkObject.onServer)
             {
                 OnDestroyServer();
             }

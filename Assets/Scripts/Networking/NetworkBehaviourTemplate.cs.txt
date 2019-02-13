@@ -6,8 +6,8 @@ using MastersOfTempest.Networking;
 namespace MastersOfTempest
 {
     // Use this class for custom networking messages between the client and the server
-    // Requires a ServerObject to be attached to this gameObject
-    // The transform is automatically synchronized already by the ServerObject
+    // Requires a NetworkObject to be attached to this gameObject
+    // The transform is automatically synchronized already by the NetworkObject (Position, Rotation, Scale, Parent)
 
     // NOTES:
     // - Rename this class and the message struct

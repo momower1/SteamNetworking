@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace MastersOfTempest.Networking
 {
-    public class MessageServerObject
+    public class MessageNetworkObject
     {
         // Fixed size
         public float time;                                          // 4 bytes
@@ -21,16 +21,16 @@ namespace MastersOfTempest.Networking
         // Dynamic size
         public string name;                                         // ? bytes
 
-        public MessageServerObject ()
+        public MessageNetworkObject ()
         {
             // Empty constructor
         }
 
-        public MessageServerObject(ServerObject serverObject)
+        public MessageNetworkObject(NetworkObject networkObject)
         {
-            if (serverObject.transform.parent != null)
+            if (networkObject.transform.parent != null)
             {
-                parentInstanceID = serverObject.transform.parent.GetInstanceID();
+                parentInstanceID = networkObject.transform.parent.GetInstanceID();
                 hasParent = true;
             }
             else
@@ -39,15 +39,15 @@ namespace MastersOfTempest.Networking
                 hasParent = false;
             }
 
-            // Set and save the last update time of the server object
-            time = serverObject.lastUpdate = Time.time;
-            name = serverObject.name;
-            resourceID = serverObject.resourceID;
-            instanceID = serverObject.transform.GetInstanceID();
-            rootInstanceID = serverObject.root.transform.GetInstanceID();
-            localPosition = serverObject.transform.localPosition;
-            localRotation = serverObject.transform.localRotation;
-            localScale = serverObject.transform.localScale;
+            // Set and save the last update time of the network object
+            time = networkObject.lastUpdate = Time.time;
+            name = networkObject.name;
+            resourceID = networkObject.resourceID;
+            instanceID = networkObject.transform.GetInstanceID();
+            rootInstanceID = networkObject.root.transform.GetInstanceID();
+            localPosition = networkObject.transform.localPosition;
+            localRotation = networkObject.transform.localRotation;
+            localScale = networkObject.transform.localScale;
         }
 
         public byte[] ToBytes ()
@@ -80,33 +80,33 @@ namespace MastersOfTempest.Networking
             return (byte[]) data.ToArray(typeof(byte));
         }
 
-        public static MessageServerObject FromBytes (byte[] data, int startIndex)
+        public static MessageNetworkObject FromBytes (byte[] data, int startIndex)
         {
-            MessageServerObject messageServerObject = new MessageServerObject();
+            MessageNetworkObject messageNetworkObject = new MessageNetworkObject();
 
             // Fixed size
-            messageServerObject.time = BitConverter.ToSingle(data, startIndex);
-            messageServerObject.hasParent = BitConverter.ToBoolean(data, startIndex + 4);
-            messageServerObject.resourceID = BitConverter.ToInt32(data, startIndex + 5);
-            messageServerObject.instanceID = BitConverter.ToInt32(data, startIndex + 9);
-            messageServerObject.rootInstanceID = BitConverter.ToInt32(data, startIndex + 13);
-            messageServerObject.parentInstanceID = BitConverter.ToInt32(data, startIndex + 17);
-            messageServerObject.localPosition.x = BitConverter.ToSingle(data, startIndex + 21);
-            messageServerObject.localPosition.y = BitConverter.ToSingle(data, startIndex + 25);
-            messageServerObject.localPosition.z = BitConverter.ToSingle(data, startIndex + 29);
-            messageServerObject.localRotation.x = BitConverter.ToSingle(data, startIndex + 33);
-            messageServerObject.localRotation.y = BitConverter.ToSingle(data, startIndex + 37);
-            messageServerObject.localRotation.z = BitConverter.ToSingle(data, startIndex + 41);
-            messageServerObject.localRotation.w = BitConverter.ToSingle(data, startIndex + 45);
-            messageServerObject.localScale.x = BitConverter.ToSingle(data, startIndex + 49);
-            messageServerObject.localScale.y = BitConverter.ToSingle(data, startIndex + 53);
-            messageServerObject.localScale.z = BitConverter.ToSingle(data, startIndex + 57);
+            messageNetworkObject.time = BitConverter.ToSingle(data, startIndex);
+            messageNetworkObject.hasParent = BitConverter.ToBoolean(data, startIndex + 4);
+            messageNetworkObject.resourceID = BitConverter.ToInt32(data, startIndex + 5);
+            messageNetworkObject.instanceID = BitConverter.ToInt32(data, startIndex + 9);
+            messageNetworkObject.rootInstanceID = BitConverter.ToInt32(data, startIndex + 13);
+            messageNetworkObject.parentInstanceID = BitConverter.ToInt32(data, startIndex + 17);
+            messageNetworkObject.localPosition.x = BitConverter.ToSingle(data, startIndex + 21);
+            messageNetworkObject.localPosition.y = BitConverter.ToSingle(data, startIndex + 25);
+            messageNetworkObject.localPosition.z = BitConverter.ToSingle(data, startIndex + 29);
+            messageNetworkObject.localRotation.x = BitConverter.ToSingle(data, startIndex + 33);
+            messageNetworkObject.localRotation.y = BitConverter.ToSingle(data, startIndex + 37);
+            messageNetworkObject.localRotation.z = BitConverter.ToSingle(data, startIndex + 41);
+            messageNetworkObject.localRotation.w = BitConverter.ToSingle(data, startIndex + 45);
+            messageNetworkObject.localScale.x = BitConverter.ToSingle(data, startIndex + 49);
+            messageNetworkObject.localScale.y = BitConverter.ToSingle(data, startIndex + 53);
+            messageNetworkObject.localScale.z = BitConverter.ToSingle(data, startIndex + 57);
 
             // Dynamic size
             int nameDataLength = BitConverter.ToInt32(data, startIndex + 61);
-            messageServerObject.name = System.Text.Encoding.UTF8.GetString(data, startIndex + 65, nameDataLength);
+            messageNetworkObject.name = System.Text.Encoding.UTF8.GetString(data, startIndex + 65, nameDataLength);
 
-            return messageServerObject;
+            return messageNetworkObject;
         }
     }
 }

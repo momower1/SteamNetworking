@@ -5,9 +5,9 @@ using UnityEngine;
 
 namespace MastersOfTempest.Networking
 {
-    class MessageServerObjectList
+    class MessageNetworkObjectList
     {
-        // Dynamic size, stores byte representations of server object messages
+        // Dynamic size, stores byte representations of network object messages
         public LinkedList<byte[]> messages = new LinkedList<byte[]>();    // ? bytes
 
         public int GetLength ()
@@ -39,15 +39,15 @@ namespace MastersOfTempest.Networking
             return (byte[])data.ToArray(typeof(byte));
         }
 
-        public static MessageServerObjectList FromBytes(byte[] data, int startIndex)
+        public static MessageNetworkObjectList FromBytes(byte[] data, int startIndex)
         {
-            MessageServerObjectList messageServerObjectList = new MessageServerObjectList();
+            MessageNetworkObjectList messageNetworkObjectList = new MessageNetworkObjectList();
 
             // Get messages length
             int messagesCount = BitConverter.ToInt32(data, startIndex);
             int index = startIndex + 4;
 
-            // Read and assign all the dynamically sized server object messages
+            // Read and assign all the dynamically sized network object messages
             for (int i = 0; i < messagesCount; i++)
             {
                 int bLength = BitConverter.ToInt32(data, index);
@@ -57,10 +57,10 @@ namespace MastersOfTempest.Networking
                 Array.Copy(data, index, b, 0, bLength);
                 index += bLength;
 
-                messageServerObjectList.messages.AddLast(b);
+                messageNetworkObjectList.messages.AddLast(b);
             }
 
-            return messageServerObjectList;
+            return messageNetworkObjectList;
         }
     }
 }

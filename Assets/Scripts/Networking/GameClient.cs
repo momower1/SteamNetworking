@@ -24,11 +24,11 @@ namespace MastersOfTempest.Networking
         [Space(10)]
         public UnityEvent onClientInitialized;
 
-        // Stores all the server object prefabs based on their resource id
-        private Dictionary<int, GameObject> serverObjectPrefabs = new Dictionary<int, GameObject>();
+        // Stores all the network object prefabs based on their resource id
+        private Dictionary<int, GameObject> networkObjectPrefabs = new Dictionary<int, GameObject>();
 
         // Use the gameobject instance id from the server to keep track of the objects
-        private Dictionary<int, ServerObject> objectsFromServer = new Dictionary<int, ServerObject>();
+        private Dictionary<int, NetworkObject> objectsFromServer = new Dictionary<int, NetworkObject>();
 
         private void Awake()
         {
@@ -42,27 +42,27 @@ namespace MastersOfTempest.Networking
                 Destroy(gameObject);
             }
 
-            // Load all the prefabs for server objects
-            ServerObject[] serverObjectResources = Resources.LoadAll<ServerObject>("ServerObjects/");
+            // Load all the prefabs for network objects
+            NetworkObject[] networkObjectResources = Resources.LoadAll<NetworkObject>("NetworkObjects/");
 
-            foreach (ServerObject s in serverObjectResources)
+            foreach (NetworkObject s in networkObjectResources)
             {
-                if (s.resourceID > 0 && !serverObjectPrefabs.ContainsKey(s.resourceID))
+                if (s.resourceID > 0 && !networkObjectPrefabs.ContainsKey(s.resourceID))
                 {
-                    serverObjectPrefabs[s.resourceID] = s.gameObject;
+                    networkObjectPrefabs[s.resourceID] = s.gameObject;
                 }
                 else
                 {
-                    Debug.LogError("Server object " + s.name + " does not have a valid resource id!");
+                    Debug.LogError(nameof(NetworkObject) + s.name + " does not have a valid resource id!");
                 }
             }
         }
 
         void Start()
         {
-            NetworkManager.Instance.clientMessageEvents[NetworkMessageType.ServerObject] += OnMessageServerObject;
-            NetworkManager.Instance.clientMessageEvents[NetworkMessageType.ServerObjectList] += OnMessageServerObjectList;
-            NetworkManager.Instance.clientMessageEvents[NetworkMessageType.DestroyServerObject] += OnMessageDestroyServerObject;
+            NetworkManager.Instance.clientMessageEvents[NetworkMessageType.NetworkObject] += OnMessageNetworkObject;
+            NetworkManager.Instance.clientMessageEvents[NetworkMessageType.NetworkObjectList] += OnMessageNetworkObjectList;
+            NetworkManager.Instance.clientMessageEvents[NetworkMessageType.DestroyNetworkObject] += OnMessageDestroyNetworkObject;
             NetworkManager.Instance.clientMessageEvents[NetworkMessageType.PingPong] += OnMessagePingPong;
             NetworkManager.Instance.clientMessageEvents[NetworkMessageType.NetworkBehaviour] += OnMessageNetworkBehaviour;
             NetworkManager.Instance.clientMessageEvents[NetworkMessageType.NetworkBehaviourInitialized] += OnMessageNetworkBehaviourInitialized;
@@ -103,109 +103,109 @@ namespace MastersOfTempest.Networking
             }
         }
 
-        void OnMessageServerObject(byte[] data, ulong steamID)
+        void OnMessageNetworkObject(byte[] data, ulong steamID)
         {
-            UpdateServerObject(MessageServerObject.FromBytes(data, 0));
+            UpdateNetworkObject(MessageNetworkObject.FromBytes(data, 0));
         }
 
-        void UpdateServerObject(MessageServerObject messageServerObject)
+        void UpdateNetworkObject(MessageNetworkObject messageNetworkObject)
         {
             // Create a new object if it doesn't exist yet
-            if (!objectsFromServer.ContainsKey(messageServerObject.instanceID))
+            if (!objectsFromServer.ContainsKey(messageNetworkObject.instanceID))
             {
                 // Make sure that the parent exists already if it has one
-                if (!messageServerObject.hasParent || objectsFromServer.ContainsKey(messageServerObject.parentInstanceID))
+                if (!messageNetworkObject.hasParent || objectsFromServer.ContainsKey(messageNetworkObject.parentInstanceID))
                 {
                     // Check if the object is a prefab or a child of a prefab (resourceID < 0)
-                    if (messageServerObject.resourceID > 0)
+                    if (messageNetworkObject.resourceID > 0)
                     {
                         // Switch active scene so that instantiate creates the object as part of the client scene
                         Scene previouslyActiveScene = SceneManager.GetActiveScene();
                         SceneManager.SetActiveScene(gameObject.scene);
 
                         // Instantiate the object
-                        ServerObject tmp = Instantiate(serverObjectPrefabs[messageServerObject.resourceID]).GetComponent<ServerObject>();
-                        objectsFromServer[messageServerObject.instanceID] = tmp;
+                        NetworkObject tmp = Instantiate(networkObjectPrefabs[messageNetworkObject.resourceID]).GetComponent<NetworkObject>();
+                        objectsFromServer[messageNetworkObject.instanceID] = tmp;
 
                         // Switch back to the previously active scene
                         SceneManager.SetActiveScene(previouslyActiveScene);
 
                         // Set attributes, also update transform after spawn
                         tmp.onServer = false;
-                        tmp.serverID = messageServerObject.instanceID;
-                        tmp.transform.localPosition = messageServerObject.localPosition;
-                        tmp.transform.localRotation = messageServerObject.localRotation;
-                        tmp.transform.localScale = messageServerObject.localScale;
+                        tmp.networkID = messageNetworkObject.instanceID;
+                        tmp.transform.localPosition = messageNetworkObject.localPosition;
+                        tmp.transform.localRotation = messageNetworkObject.localRotation;
+                        tmp.transform.localScale = messageNetworkObject.localScale;
                     }
-                    else if (messageServerObject.resourceID < 0)
+                    else if (messageNetworkObject.resourceID < 0)
                     {
                         // Then only the transform should be synchronized and no objects should be spawned
                         // The root resource has an array of all children where the index is the childId
                         // Client children find themselves with root.children[-resourceID - 1]
                         // Find root, then child and assign to objectsFromServer
-                        ServerObject root = objectsFromServer[messageServerObject.rootInstanceID];
-                        ServerObject child = root.children[-messageServerObject.resourceID - 1];
-                        child.serverID = messageServerObject.instanceID;
+                        NetworkObject root = objectsFromServer[messageNetworkObject.rootInstanceID];
+                        NetworkObject child = root.children[-messageNetworkObject.resourceID - 1];
+                        child.networkID = messageNetworkObject.instanceID;
                         child.onServer = false;
 
                         // Add to the dictionairy to make sure that this object is updated with messages
-                        objectsFromServer.Add(child.serverID, child);
+                        objectsFromServer.Add(child.networkID, child);
                     }
                 }
             }
 
-            if (objectsFromServer.ContainsKey(messageServerObject.instanceID))
+            if (objectsFromServer.ContainsKey(messageNetworkObject.instanceID))
             {
-                ServerObject serverObject = objectsFromServer[messageServerObject.instanceID];
+                NetworkObject networkObject = objectsFromServer[messageNetworkObject.instanceID];
 
-                if (serverObject.lastUpdate <= messageServerObject.time)
+                if (networkObject.lastUpdate <= messageNetworkObject.time)
                 {
                     // Update values only if the UDP packet values are newer
-                    serverObject.name = "[" + messageServerObject.instanceID + "]\t" + messageServerObject.name;
-                    serverObject.lastUpdate = messageServerObject.time;
+                    networkObject.name = "[" + messageNetworkObject.instanceID + "]\t" + messageNetworkObject.name;
+                    networkObject.lastUpdate = messageNetworkObject.time;
 
                     // Update the transform
-                    serverObject.UpdateTransformFromMessageServerObject(messageServerObject);
+                    networkObject.UpdateTransformFromMessageNetworkObject(messageNetworkObject);
 
                     // Update parent if possible
-                    if (messageServerObject.hasParent)
+                    if (messageNetworkObject.hasParent)
                     {
-                        if (objectsFromServer.ContainsKey(messageServerObject.parentInstanceID))
+                        if (objectsFromServer.ContainsKey(messageNetworkObject.parentInstanceID))
                         {
-                            serverObject.transform.SetParent(objectsFromServer[messageServerObject.parentInstanceID].transform, false);
+                            networkObject.transform.SetParent(objectsFromServer[messageNetworkObject.parentInstanceID].transform, false);
                         }
                     }
                     else
                     {
-                        serverObject.transform.SetParent(null);
+                        networkObject.transform.SetParent(null);
                     }
                 }
             }
             else
             {
                 // This can e.g. happen when loading a different scene and some messages from the previous scene arrive
-                Debug.LogWarning(nameof(GameClient) + " does not have a " + nameof(ServerObject) + " with the instance id " + messageServerObject.instanceID + "!");
+                Debug.LogWarning(nameof(GameClient) + " does not have a " + nameof(NetworkObject) + " with the instance id " + messageNetworkObject.instanceID + "!");
             }
         }
 
-        void OnMessageServerObjectList (byte[] data, ulong steamID)
+        void OnMessageNetworkObjectList (byte[] data, ulong steamID)
         {
-            MessageServerObjectList messageServerObjectList = MessageServerObjectList.FromBytes(data, 0);
+            MessageNetworkObjectList messageNetworkObjectList = MessageNetworkObjectList.FromBytes(data, 0);
 
-            foreach (byte[] b in messageServerObjectList.messages)
+            foreach (byte[] b in messageNetworkObjectList.messages)
             {
-                UpdateServerObject(MessageServerObject.FromBytes(b, 0));
+                UpdateNetworkObject(MessageNetworkObject.FromBytes(b, 0));
             }
         }
 
-        void OnMessageDestroyServerObject(byte[] data, ulong steamID)
+        void OnMessageDestroyNetworkObject(byte[] data, ulong steamID)
         {
-            int serverIDToDestroy = System.BitConverter.ToInt32(data, 0);
+            int networkIDToDestroy = System.BitConverter.ToInt32(data, 0);
 
-            if (objectsFromServer.ContainsKey(serverIDToDestroy))
+            if (objectsFromServer.ContainsKey(networkIDToDestroy))
             {
-                Destroy(objectsFromServer[serverIDToDestroy].gameObject);
-                objectsFromServer.Remove(serverIDToDestroy);
+                Destroy(objectsFromServer[networkIDToDestroy].gameObject);
+                objectsFromServer.Remove(networkIDToDestroy);
             }
         }
 
@@ -218,18 +218,18 @@ namespace MastersOfTempest.Networking
         void OnMessageNetworkBehaviour(byte[] data, ulong steamID)
         {
             MessageNetworkBehaviour message = MessageNetworkBehaviour.FromBytes(data, 0);
-            objectsFromServer[message.serverID].HandleNetworkBehaviourMessage(message.index, message.data, steamID);
+            objectsFromServer[message.networkID].HandleNetworkBehaviourMessage(message.index, message.data, steamID);
         }
 
         void OnMessageNetworkBehaviourInitialized(byte[] data, ulong steamID)
         {
             MessageNetworkBehaviourInitialized message = ByteSerializer.FromBytes<MessageNetworkBehaviourInitialized>(data);
-            objectsFromServer[message.serverID].HandleNetworkBehaviourInitializedMessage(message.typeID, steamID);
+            objectsFromServer[message.networkID].HandleNetworkBehaviourInitializedMessage(message.typeID, steamID);
         }
 
-        public ServerObject GetObjectFromServer(int serverID)
+        public NetworkObject GetObjectFromServer(int networkID)
         {
-            return objectsFromServer[serverID];
+            return objectsFromServer[networkID];
         }
 
         public bool IsInitialized ()
@@ -249,9 +249,9 @@ namespace MastersOfTempest.Networking
 
         void OnDestroy()
         {
-            NetworkManager.Instance.clientMessageEvents[NetworkMessageType.ServerObject] -= OnMessageServerObject;
-            NetworkManager.Instance.clientMessageEvents[NetworkMessageType.ServerObjectList] -= OnMessageServerObjectList;
-            NetworkManager.Instance.clientMessageEvents[NetworkMessageType.DestroyServerObject] -= OnMessageDestroyServerObject;
+            NetworkManager.Instance.clientMessageEvents[NetworkMessageType.NetworkObject] -= OnMessageNetworkObject;
+            NetworkManager.Instance.clientMessageEvents[NetworkMessageType.NetworkObjectList] -= OnMessageNetworkObjectList;
+            NetworkManager.Instance.clientMessageEvents[NetworkMessageType.DestroyNetworkObject] -= OnMessageDestroyNetworkObject;
             NetworkManager.Instance.clientMessageEvents[NetworkMessageType.PingPong] -= OnMessagePingPong;
             NetworkManager.Instance.clientMessageEvents[NetworkMessageType.NetworkBehaviour] -= OnMessageNetworkBehaviour;
             NetworkManager.Instance.clientMessageEvents[NetworkMessageType.NetworkBehaviourInitialized] -= OnMessageNetworkBehaviourInitialized;

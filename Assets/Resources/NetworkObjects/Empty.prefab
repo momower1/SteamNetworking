@@ -45,7 +45,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceID: 3
   onServer: 1
-  serverID: 0
+  networkID: 0
   lastUpdate: 0
   root: {fileID: 114340251316627260}
   children: []

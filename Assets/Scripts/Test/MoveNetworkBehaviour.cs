@@ -46,12 +46,12 @@ namespace MastersOfTempest.Networking.Test
 
             if (Input.GetKeyDown(KeyCode.I))
             {
-                serverObject.interpolateOnClient = true;
+                networkObject.interpolateOnClient = true;
             }
 
             if (Input.GetKeyDown(KeyCode.O))
             {
-                serverObject.interpolateOnClient = false;
+                networkObject.interpolateOnClient = false;
             }
         }
 

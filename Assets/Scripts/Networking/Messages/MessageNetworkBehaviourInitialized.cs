@@ -6,13 +6,13 @@ namespace MastersOfTempest.Networking
 {
     public struct MessageNetworkBehaviourInitialized
     {
-        public int serverID;                                        // 4 bytes
+        public int networkID;                                       // 4 bytes
         public int typeID;                                          // 4 bytes
                                                                     // 8 bytes
 
-        public MessageNetworkBehaviourInitialized(int serverID, int typeID)
+        public MessageNetworkBehaviourInitialized(int networkID, int typeID)
         {
-            this.serverID = serverID;
+            this.networkID = networkID;
             this.typeID = typeID;
         }
     }

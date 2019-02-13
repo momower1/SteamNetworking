@@ -6,26 +6,25 @@ using UnityEngine;
 namespace MastersOfTempest.Networking
 {
     [DisallowMultipleComponent]
-    public class ServerObject : MonoBehaviour
+    public class NetworkObject : MonoBehaviour
     {
         [ReadOnly]
         public int resourceID = -1;
         [ReadOnly]
         public bool onServer = true;
         [ReadOnly]
-        public int serverID = 0;
+        public int networkID = 0;
         [ReadOnly]
         public float lastUpdate = 0;
         
-        // Used when the server object is a child in a server object resource (resourceID < 0), set by editor script
+        // Used when the network object is a child in a network object resource (resourceID < 0), set by editor script and saved in the prefab
         [SerializeField, HideInInspector]
-        public ServerObject root = null;
+        public NetworkObject root = null;
         [SerializeField, HideInInspector]
-        public ServerObject[] children = null;
+        public NetworkObject[] children = null;
 
         [Header("Server Parameters")]
         public string serverLayer = "Server";
-        public bool removeServerChildColliders = false;
 
         [Header("Client Parameters")]
         public string clientLayer = "Client";
@@ -34,8 +33,8 @@ namespace MastersOfTempest.Networking
         public bool removeChildRigidbodies = true;
 
         // Interpolation variables
-        private MessageServerObject currentMessage = null;
-        private MessageServerObject lastMessage = null;
+        private MessageNetworkObject currentMessage = null;
+        private MessageNetworkObject lastMessage = null;
         private float timeSinceLastMessage = 0;
 
         // Handles all the incoming network behaviour messages from the network behaviours
@@ -53,26 +52,22 @@ namespace MastersOfTempest.Networking
                 // Check if the resource id is valid
                 if (resourceID == 0)
                 {
-                    Debug.LogError("Resource id is not valid for ServerObject " + gameObject.name);
+                    Debug.LogError("Resource id is not valid for " + nameof(NetworkObject) + gameObject.name);
                 }
 
-                // Set server ID
-                serverID = transform.GetInstanceID();
+                // Set network ID
+                networkID = transform.GetInstanceID();
 
                 // Set layer, also for children
                 SetLayerOfThisGameObjectAndAllChildren(serverLayer);
 
-                // Remove colliders on the server
-                RemoveCollidersAndRigidbodiesServer();
-
                 // Register to game server
-                GameServer.Instance.RegisterAndSendMessageServerObject(this);
+                GameServer.Instance.RegisterAndSendMessageNetworkObject(this);
             }
             else
             {
+                // Apply layer and physics changes
                 SetLayerOfThisGameObjectAndAllChildren(clientLayer);
-
-                // Remove collider / rigidbody on the client because it is not needed most of the time
                 RemoveCollidersAndRigidbodies();
             }
         }
@@ -123,19 +118,6 @@ namespace MastersOfTempest.Networking
             }
         }
 
-        private void RemoveCollidersAndRigidbodiesServer()
-        {
-            if (removeServerChildColliders)
-            {
-                Collider[] colliders = GetComponentsInChildren<Collider>();
-
-                foreach (Collider c in colliders)
-                {
-                    Destroy(c);
-                }
-            }
-        }
-
         public bool HasChanged ()
         {
             bool changed = (transform.localPosition != lastLocalPosition) | (transform.localRotation != lastLocalRotation) | (transform.localScale != lastLocalScale);
@@ -148,7 +130,7 @@ namespace MastersOfTempest.Networking
             return changed;
         }
 
-        public void UpdateTransformFromMessageServerObject(MessageServerObject messageServerObject)
+        public void UpdateTransformFromMessageNetworkObject(MessageNetworkObject messageNetworkObject)
         {
             if (!onServer)
             {
@@ -156,7 +138,7 @@ namespace MastersOfTempest.Networking
                 {
                     // Save data for interpolation
                     lastMessage = currentMessage;
-                    currentMessage = messageServerObject;
+                    currentMessage = messageNetworkObject;
                     timeSinceLastMessage = 0;
 
                     // Correct the time of the last message to the time where it should have arrived based on the server hz
@@ -169,9 +151,9 @@ namespace MastersOfTempest.Networking
                 else
                 {
                     // Directly update the transform
-                    transform.localPosition = messageServerObject.localPosition;
-                    transform.localRotation = messageServerObject.localRotation;
-                    transform.localScale = messageServerObject.localScale;
+                    transform.localPosition = messageNetworkObject.localPosition;
+                    transform.localRotation = messageNetworkObject.localRotation;
+                    transform.localScale = messageNetworkObject.localScale;
                 }
             }
         }
@@ -202,15 +184,13 @@ namespace MastersOfTempest.Networking
         {
             int layerToSet = LayerMask.NameToLayer(layer);
 
-            Transform[] children = GetComponentsInChildren<Transform>();
+            // Also contains the own transform
+            Transform[] thisAndAllChildren = GetComponentsInChildren<Transform>(true);
 
-            foreach (Transform child in children)
+            foreach (Transform t in thisAndAllChildren)
             {
-                if(child.GetComponent<ServerObject>() == null || child.GetComponent<ServerObject>().serverLayer == serverLayer)
-                    child.gameObject.layer = layerToSet;
+                t.gameObject.layer = layerToSet;
             }
-
-            gameObject.layer = layerToSet;
         }
 
         void OnDestroy()
@@ -218,8 +198,8 @@ namespace MastersOfTempest.Networking
             if (onServer)
             {
                 // Send destroy message
-                GameServer.Instance.RemoveServerObject(this);
-                GameServer.Instance.SendMessageDestroyServerObject(this);
+                GameServer.Instance.RemoveNetworkObject(this);
+                GameServer.Instance.SendMessageDestroyNetworkObject(this);
             }
         }
     }
