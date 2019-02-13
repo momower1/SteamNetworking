@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Facepunch.Steamworks;
 
-namespace MastersOfTempest.Networking
+namespace SteamNetworking
 {
     public class LobbyChat : MonoBehaviour
     {

@@ -1,4 +1,4 @@
-﻿namespace MastersOfTempest.Networking
+﻿namespace SteamNetworking
 {
     public enum NetworkMessageType
     {

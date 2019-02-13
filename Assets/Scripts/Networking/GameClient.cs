@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using SteamNetworking.Messages;
 
-namespace MastersOfTempest.Networking
+namespace SteamNetworking
 {
     public class GameClient : MonoBehaviour
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MastersOfTempest
+namespace SteamNetworking
 {
     // Creates simple dialog boxes at runtime with yes/no buttons that invoke functions when they are pressed
     public class DialogBox : MonoBehaviour

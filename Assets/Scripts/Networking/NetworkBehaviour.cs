@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using SteamNetworking.Messages;
 
-namespace MastersOfTempest.Networking
+namespace SteamNetworking
 {
     [RequireComponent(typeof(NetworkObject))]
     public abstract class NetworkBehaviour : MonoBehaviour

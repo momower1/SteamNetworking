@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MastersOfTempest.Networking.Test
+namespace SteamNetworking.Test
 {
     public class MoveNetworkBehaviour : NetworkBehaviour
     {

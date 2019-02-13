@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace MastersOfTempest.Networking.Test
+namespace SteamNetworking.Test
 {
     public class ExpandSplitNetworkBehaviour : NetworkBehaviour
     {
