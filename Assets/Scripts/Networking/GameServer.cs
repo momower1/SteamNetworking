@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using SteamNetworking.Messages;
 
 namespace SteamNetworking
@@ -142,6 +143,16 @@ namespace SteamNetworking
                 // Send the message to all clients
                 NetworkManager.Instance.SendToAllClients(messageNetworkObjectList.ToBytes(), NetworkMessageType.NetworkObjectList, sendType);
             }
+        }
+
+        public Object InstantiateInScene(Object original, Vector3 position, Quaternion rotation, Transform parent)
+        {
+            // Switch scenes, instantiate object and then switch the scene back
+            Scene previouslyActiveScene = SceneManager.GetActiveScene();
+            SceneManager.SetActiveScene(gameObject.scene);
+            Object result = Instantiate(original, position, rotation, parent);
+            SceneManager.SetActiveScene(previouslyActiveScene);
+            return result;
         }
 
         public void RegisterAndSendMessageNetworkObject (NetworkObject networkObject)
