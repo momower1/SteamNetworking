@@ -37,6 +37,7 @@
   - The GameServer and GameClient class have UnityEvents that are triggered when they are initialized. This is basically the same as StartServer() and StartClient() from the NetworkBehaviour. Use this instead of a NetworkBehaviour when you don't have to send messages.
 
 ## Issues and possible improvements
+- Improve host performance by remove all the renderers (and other unnecessary components) from objects in the server scene
 - Loading between different scenes should be implemented with a custom messages
 - If the server leaves the game, everything crashes
 - The lobby scene crashes for a lot of people (maybe the fix is to add the app id game "Spacewar" to the steam library)
