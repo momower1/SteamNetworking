@@ -1,18 +1,17 @@
-## General setup
-- Steam networking with a dedicated host using the Facepunch.Steamworks API
-- Steam has to be running in the background for the networking to work
+## Features
+- Steam networking in Unity with a dedicated host using the Facepunch.Steamworks API
+- Synchronization of transforms (Position, Rotation, Scale, Parent, Instantiate, Destroy)
 - The host runs the server scene and the client scene at the same time, all other players only run the client scene
+- Use one single script to send and handle custom messages between the client and the server
+- Set different behaviour for the object when it is on the client and when it is on the server
+
+## General setup
+- Steam has to be running in the background for the networking to work
 - The server scene needs a GameServer object and the client scene a GameClient object
 - Server scene should do everything (movement, physics, ...), the client scene just automatically spawns all the objects and sends player input to the server
 - All objects in the client scene have to be on the layer _Client_ and all objects in the server scene have to be on the layer _Server_
 - Display1 shows the game from the client camera, Display2 shows the game from the server camera and the SceneView shows both perspectives
 - You have to load the lobby scene first in order to initialize the networking and click ready to load the server and client scene. You can change the _LobbyManager_ attributes _string:serverSceneName_ and _string:clientSceneName_ to load your own scenes for testing purposes
-
-## Functionality
-- Synchronize transforms (position, rotation, scale, parent, instantiate, destroy)
-- Send custom messages from a client to the server
-- Handle custom messages from a client on the server
-- Set different behaviour for the object when it is on the client and when it is on the server
 
 ## How to use
 - **Synchronize the transform of an object:**
