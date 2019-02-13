@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2824742043163928079}
   - component: {fileID: 2824742043163928072}
   - component: {fileID: 2824742043163928073}
+  - component: {fileID: 4993242247719646177}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -26,7 +27,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2824742043163928074}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1.78, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -68,4 +69,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   index: 0
-  mouseSensitivity: 5
+  controllingSteamID: 0
+  playerInput: {fileID: 4993242247719646177}
+--- !u!114 &4993242247719646177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824742043163928074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1846babb800e6dd48998e1fc0640a5cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  index: 1
+  inputsPerSec: 60
+  mouseSensitivity: 1
+  movementSpeed: 10

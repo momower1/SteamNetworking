@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Facepunch.Steamworks;
+using SteamNetworking;
 
 public class PlayerSpawner : MonoBehaviour
 {
@@ -13,8 +14,8 @@ public class PlayerSpawner : MonoBehaviour
 
         foreach (ulong steamID in memberIDs)
         {
-            Player player = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity).GetComponent<Player>();
-            player.steamID = steamID;
+            Player player = GameServer.Instance.InstantiateInScene(playerPrefab, playerPrefab.transform.position, playerPrefab.transform.rotation, null).GetComponent<Player>();
+            player.controllingSteamID = steamID;
         }
     }
 }
