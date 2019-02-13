@@ -1,91 +1,88 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MastersOfTempest.Networking;
+using SteamNetworking;
 
-namespace MastersOfTempest
+// Use this class for custom networking messages between the client and the server
+// Requires a NetworkObject to be attached to this gameObject
+// The transform is automatically synchronized already by the NetworkObject (Position, Rotation, Scale, Parent)
+
+// NOTES:
+// - Rename this class and the message struct
+// - Only use SendToServer(...) as a client and let the server answer with SendToClient(...) or SendToAllClients(...)
+// - You can override the OnClientMessageReceivedRaw(...) and OnServerMessageReceivedRaw(...) functions in combination with the ByteSerializer for less message overhead
+// - If you have to use the MonoBehaviour Start(), Update() and OnDestroy() methods you have to call base.Start() / base.Update() / base.OnDestroy() inside
+// - If you want to synchronize a lot of objects it is more performant to only have one NetworkBehaviour that handles e.g. a list of objects that you want to synchronize
+[DisallowMultipleComponent]
+public class NetworkBehaviourTemplate : NetworkBehaviour
 {
-    // Use this class for custom networking messages between the client and the server
-    // Requires a NetworkObject to be attached to this gameObject
-    // The transform is automatically synchronized already by the NetworkObject (Position, Rotation, Scale, Parent)
+    // Example: synchronize this variable which is randomly set by the server
+    public int myVariable = 0;
 
-    // NOTES:
-    // - Rename this class and the message struct
-    // - Only use SendToServer(...) as a client and let the server answer with SendToClient(...) or SendToAllClients(...)
-    // - You can override the OnClientMessageReceivedRaw(...) and OnServerMessageReceivedRaw(...) functions in combination with the ByteSerializer for less message overhead
-    // - If you have to use the MonoBehaviour Start(), Update() and OnDestroy() methods you have to call base.Start() / base.Update() / base.OnDestroy() inside
-    // - If you want to synchronize a lot of objects it is more performant to only have one NetworkBehaviour that handles e.g. a list of objects that you want to synchronize
-    [DisallowMultipleComponent]
-    public class NetworkBehaviourTemplate : NetworkBehaviour
+    [System.Serializable]
+    private struct NetworkBehaviourTemplateMessage
     {
-        // Example: synchronize this variable which is randomly set by the server
-        public int myVariable = 0;
+        // Declare all your variables that you want to send over the network here
 
-        [System.Serializable]
-        private struct NetworkBehaviourTemplateMessage
-        {
-            // Declare all your variables that you want to send over the network here
+        // Example: store myVariable from the server in this message
+        public int serverMyVariable;
+    };
 
-            // Example: store myVariable from the server in this message
-            public int serverMyVariable;
-        };
+    // Used for initialization when this object is on a client
+    protected override void StartClient()
+    {
+        // Example: ask the server for the value of the variable
+        SendToServer("Hello server, can you please send me the value of your variable?");
+    }
 
-        // Used for initialization when this object is on a client
-        protected override void StartClient()
-        {
-            // Example: ask the server for the value of the variable
-            SendToServer("Hello server, can you please send me the value of your variable?");
-        }
+    // Used for initialization when this object is on the server
+    protected override void StartServer()
+    {
+        // Example: set random value for myVariable
+        myVariable = Random.Range(0, 100);
+    }
 
-        // Used for initialization when this object is on the server
-        protected override void StartServer()
-        {
-            // Example: set random value for myVariable
-            myVariable = Random.Range(0, 100);
-        }
+    // Called each frame when this object is on a client
+    protected override void UpdateClient()
+    {
+    }
 
-        // Called each frame when this object is on a client
-        protected override void UpdateClient()
-        {
-        }
+    // Called each frame when this object is on the server
+    protected override void UpdateServer()
+    {
+    }
 
-        // Called each frame when this object is on the server
-        protected override void UpdateServer()
-        {
-        }
+    // Called when the object is on a client and receives a message
+    protected override void OnClientReceivedMessage(string message, ulong steamID)
+    {
+        // Example: deserialize the message in order to read the variable value
+        NetworkBehaviourTemplateMessage tmp = JsonUtility.FromJson<NetworkBehaviourTemplateMessage>(message);
 
-        // Called when the object is on a client and receives a message
-        protected override void OnClientReceivedMessage(string message, ulong steamID)
-        {
-            // Example: deserialize the message in order to read the variable value
-            NetworkBehaviourTemplateMessage tmp = JsonUtility.FromJson<NetworkBehaviourTemplateMessage>(message);
+        // Example: update the value of myVariable
+        myVariable = tmp.serverMyVariable;
+    }
 
-            // Example: update the value of myVariable
-            myVariable = tmp.serverMyVariable;
-        }
+    // Called when the object is on the server and receives a message
+    // Use SendToClient(...) or SendToAllClients(...) for answering / broadcasting
+    protected override void OnServerReceivedMessage(string message, ulong steamID)
+    {
+        // Example: create a new NetworkBehaviourTemplateMessage
+        NetworkBehaviourTemplateMessage tmp;
+        tmp.serverMyVariable = myVariable;
 
-        // Called when the object is on the server and receives a message
-        // Use SendToClient(...) or SendToAllClients(...) for answering / broadcasting
-        protected override void OnServerReceivedMessage(string message, ulong steamID)
-        {
-            // Example: create a new NetworkBehaviourTemplateMessage
-            NetworkBehaviourTemplateMessage tmp;
-            tmp.serverMyVariable = myVariable;
+        // Example: broadcasting the message to all clients
+        SendToAllClients(JsonUtility.ToJson(tmp));
+    }
 
-            // Example: broadcasting the message to all clients
-            SendToAllClients(JsonUtility.ToJson(tmp));
-        }
+    // Called when this object is destroyed on a client
+    // Do not send any messages to the server here (the receiving object on the server is probably already destroyed)
+    protected override void OnDestroyClient()
+    {
+    }
 
-        // Called when this object is destroyed on a client
-        // Do not send any messages to the server here (the receiving object on the server is probably already destroyed)
-        protected override void OnDestroyClient()
-        {
-        }
-
-        // Called when this object is destroyed on the server
-        // Do not send any messages to the client here (the receiving object on the client will be destroyed soon)
-        protected override void OnDestroyServer()
-        {
-        }
+    // Called when this object is destroyed on the server
+    // Do not send any messages to the client here (the receiving object on the client will be destroyed soon)
+    protected override void OnDestroyServer()
+    {
     }
 }

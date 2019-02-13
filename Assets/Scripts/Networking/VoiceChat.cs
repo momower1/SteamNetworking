@@ -1,13 +1,11 @@
-﻿using MastersOfTempest.Networking;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using UnityEngine.SceneManagement;
-using UnityEngine.Audio;
-using System.Linq;
 
-namespace MastersOfTempest.Networking
+// TODO: Fix crackling noise by using streaming audio like here: https://forum.unity.com/threads/example-voicechat-with-unet-and-steamworks.482721/
+
+namespace SteamNetworking
 {
     [RequireComponent(typeof(AudioSource))]
     public class VoiceChat : NetworkBehaviour

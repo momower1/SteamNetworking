@@ -2,23 +2,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LoadingScreen : MonoBehaviour
+namespace SteamNetworking
 {
-    public Transform loadingIcon;
-    public float rotationSpeed;
-
-	void Update ()
+    public class LoadingScreen : MonoBehaviour
     {
-        loadingIcon.Rotate(0, 0, Time.deltaTime * rotationSpeed);
-	}
+        public Transform loadingIcon;
+        public float rotationSpeed;
 
-    public void Destroy ()
-    {
-        Destroy(gameObject);
-    }
+        void Update()
+        {
+            loadingIcon.Rotate(0, 0, Time.deltaTime * rotationSpeed);
+        }
 
-    public static void Instantiate ()
-    {
-        Instantiate(Resources.Load<GameObject>("Loading Screen Canvas"));
+        public void Destroy()
+        {
+            Destroy(gameObject);
+        }
+
+        public static void Instantiate()
+        {
+            Instantiate(Resources.Load<GameObject>("Loading Screen Canvas"));
+        }
     }
 }

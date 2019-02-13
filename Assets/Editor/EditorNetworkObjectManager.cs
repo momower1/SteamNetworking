@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace MastersOfTempest.Networking
+namespace SteamNetworking
 {
     public class EditorNetworkObjectManager
     {

@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using SteamNetworking.Messages;
 
-namespace MastersOfTempest.Networking
+namespace SteamNetworking
 {
     [DisallowMultipleComponent]
     public class NetworkObject : MonoBehaviour

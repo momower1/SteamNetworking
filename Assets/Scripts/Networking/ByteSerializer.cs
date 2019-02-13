@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace MastersOfTempest.Networking
+namespace SteamNetworking
 {
     public class ByteSerializer
     {

@@ -1,15 +1,18 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-public static class EditorCreateNetworkBehaviour
+namespace SteamNetworking
 {
-    [MenuItem("Assets/Create/C# Script NetworkBehaviour", priority = 81)]
-    static void CreateNetworkBehaviour ()
+    public static class EditorCreateNetworkBehaviour
     {
-        string templatePath = "Assets/Scripts/Networking/NetworkBehaviourTemplate.cs.txt";
-        string copyPath = AssetDatabase.GetAssetPath(Selection.activeObject) + "/NetworkBehaviourTemplate.cs";
+        [MenuItem("Assets/Create/C# Script NetworkBehaviour", priority = 81)]
+        static void CreateNetworkBehaviour()
+        {
+            string templatePath = "Assets/Scripts/Networking/NetworkBehaviourTemplate.cs.txt";
+            string copyPath = AssetDatabase.GetAssetPath(Selection.activeObject) + "/NetworkBehaviourTemplate.cs";
 
-        AssetDatabase.CopyAsset(templatePath, copyPath);
-        AssetDatabase.OpenAsset(AssetDatabase.LoadAssetAtPath<MonoScript>(copyPath));
+            AssetDatabase.CopyAsset(templatePath, copyPath);
+            AssetDatabase.OpenAsset(AssetDatabase.LoadAssetAtPath<MonoScript>(copyPath));
+        }
     }
 }

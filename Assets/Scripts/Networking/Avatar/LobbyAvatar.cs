@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-namespace MastersOfTempest.Networking
+namespace SteamNetworking
 {
     public class LobbyAvatar : Avatar
     {

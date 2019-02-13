@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MastersOfTempest.Networking
+namespace SteamNetworking.Messages
 {
     public class MessageNetworkObject
     {

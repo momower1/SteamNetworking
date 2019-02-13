@@ -3,32 +3,35 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-[CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
-public class EditorReadOnlyPropertyDrawer : PropertyDrawer
+namespace SteamNetworking
 {
-    public override void OnGUI (Rect position, SerializedProperty property, GUIContent label)
+    [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
+    public class EditorReadOnlyPropertyDrawer : PropertyDrawer
     {
-        string valueString;
-
-        switch (property.propertyType)
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            case SerializedPropertyType.Integer:
-                valueString = property.intValue.ToString();
-                break;
-            case SerializedPropertyType.Boolean:
-                valueString = property.boolValue.ToString();
-                break;
-            case SerializedPropertyType.Float:
-                valueString = property.floatValue.ToString("0.00000");
-                break;
-            case SerializedPropertyType.String:
-                valueString = property.stringValue;
-                break;
-            default:
-                valueString = "(not supported)";
-                break;
-        }
+            string valueString;
 
-        EditorGUI.LabelField(position, label.text, valueString);
+            switch (property.propertyType)
+            {
+                case SerializedPropertyType.Integer:
+                    valueString = property.intValue.ToString();
+                    break;
+                case SerializedPropertyType.Boolean:
+                    valueString = property.boolValue.ToString();
+                    break;
+                case SerializedPropertyType.Float:
+                    valueString = property.floatValue.ToString("0.00000");
+                    break;
+                case SerializedPropertyType.String:
+                    valueString = property.stringValue;
+                    break;
+                default:
+                    valueString = "(not supported)";
+                    break;
+            }
+
+            EditorGUI.LabelField(position, label.text, valueString);
+        }
     }
 }

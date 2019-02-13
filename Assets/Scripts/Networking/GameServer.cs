@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using SteamNetworking.Messages;
 
-namespace MastersOfTempest.Networking
+namespace SteamNetworking
 {
     public class GameServer : MonoBehaviour
     {

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Facepunch.Steamworks;
 
-namespace MastersOfTempest.Networking
+namespace SteamNetworking
 {
     public class LobbyManager : MonoBehaviour
     {
