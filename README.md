@@ -16,25 +16,25 @@
 
 ## How to use
 - **Synchronize the transform of an object:**
-  - Add _ServerObject_ script to the object
+  - Add _NetworkObject_ script to the object
   - Set the layer of the object to _Server_
-  - Save the object as a Prefab in the _Resources/ServerObjects/_ folder
+  - Save the object as a Prefab in the _Resources/NetworkObjects/_ folder
   - Create instances of this prefab only in the server scene
   - The prefab should be spawned and synchronized for all instances in the client scene
-  - You can add ServerObject scripts to children of the prefab, then these children will be synchronized as well
+  - You can add NetworkObject scripts to children of the prefab, then these children will be synchronized as well
   - You should not have physics on the client object (you can check the client properties to remove colliders and rigidbodies on the client)
 - **Synchronized instantiation**
-  - Instantiating a prefab from the _Resources/ServerObjects/_ folder in the server scene will also instantiate and synchronize it with the client (only ServerObject prefabs can be instantiated/duplicated, e.g it won't work with children)
+  - Instantiating a prefab from the _Resources/NetworkObjects/_ folder in the server scene will also instantiate and synchronize it with the client (only NetworkObject prefabs can be instantiated/duplicated, e.g it won't work with children)
 - **Custom messages over script:**
   - Right click in a folder in the inspector and select _Create/C# Script NetworkBehaviour_
   - The template script should be created and opened
   - Look at the example from the script and change it accordingly
-  - Add the script to a server object prefab in the _Resources/ServerObjects/_ folder
+  - Add the script to a server object prefab in the _Resources/NetworkObjects/_ folder
   - GameObjects can have multiple NetworkBehaviours attached to them
   - You cannot add or remove a NetworkBehaviour at runtime
   - You can override the OnClientMessageReceivedRaw(...) function if you want to save data by sending only the bytes instead of a JSON string. You can use the ByteSerializer class to convert a struct into a byte array and the other way around but keep in mind that the struct has to be fixed size and also below the maximum transmission size of the send type.
 - **Different behaviour for client / server:**
-  - The NetworkBehaviour methods StartServer(), UpdateServer() and OnDestroyServer() are basically Start(), Update(), OnDestroy() methods of the MonoBehaviour when the object is on the server. Otherwise StartClient(), UpdateClient() and OnDestroyClient() will be called. If you want to add e.g. OnCollisionEnter(...) with different behaviour on the server/client you can check the _bool:onServer_ attribute of the ServerObject in an if-statement.
+  - The NetworkBehaviour methods StartServer(), UpdateServer() and OnDestroyServer() are basically Start(), Update(), OnDestroy() methods of the MonoBehaviour when the object is on the server. Otherwise StartClient(), UpdateClient() and OnDestroyClient() will be called. If you want to add e.g. OnCollisionEnter(...) with different behaviour on the server/client you can check the _bool:onServer_ attribute of the NetworkObject in an if-statement.
   - The GameServer and GameClient class have UnityEvents that are triggered when they are initialized. This is basically the same as StartServer() and StartClient() from the NetworkBehaviour. Use this instead of a NetworkBehaviour when you don't have to send messages.
 
 ## Issues and possible improvements
