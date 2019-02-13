@@ -145,12 +145,12 @@ namespace SteamNetworking
             }
         }
 
-        public Object InstantiateInScene(Object original, Vector3 position, Quaternion rotation, Transform parent)
+        public GameObject InstantiateInScene(GameObject original, Vector3 position, Quaternion rotation, Transform parent)
         {
             // Switch scenes, instantiate object and then switch the scene back
             Scene previouslyActiveScene = SceneManager.GetActiveScene();
             SceneManager.SetActiveScene(gameObject.scene);
-            Object result = Instantiate(original, position, rotation, parent);
+            GameObject result = Instantiate(original, position, rotation, parent);
             SceneManager.SetActiveScene(previouslyActiveScene);
             return result;
         }
