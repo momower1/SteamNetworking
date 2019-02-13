@@ -11,14 +11,18 @@ public class PlayerInput : NetworkBehaviour
     protected float mouseSensitivity = 1;
     [SerializeField]
     protected float movementSpeed = 10;
+    [SerializeField]
+    protected GameObject projectilePrefab;
 
     private float accumulatedMouseX = 0;
     private float accumulatedMouseY = 0;
+    private int accumulatedMouse0 = 0;
 
     protected struct PlayerInputMessage
     {
         public float mouseX;
         public float mouseY;
+        public int mouse0;
         public int w;
         public int a;
         public int s;
@@ -29,6 +33,11 @@ public class PlayerInput : NetworkBehaviour
     {
         accumulatedMouseX += mouseSensitivity * Input.GetAxisRaw("Mouse X");
         accumulatedMouseY += mouseSensitivity * Input.GetAxisRaw("Mouse Y");
+
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            accumulatedMouse0++;
+        }
     }
 
     protected IEnumerator PlayerInputLoop ()
@@ -38,6 +47,7 @@ public class PlayerInput : NetworkBehaviour
             PlayerInputMessage playerInputMessage = new PlayerInputMessage();
             playerInputMessage.mouseX = accumulatedMouseX;
             playerInputMessage.mouseY = accumulatedMouseY;
+            playerInputMessage.mouse0 = accumulatedMouse0;
             playerInputMessage.w = Input.GetKey(KeyCode.W) ? 1 : 0;
             playerInputMessage.a = Input.GetKey(KeyCode.A) ? 1 : 0;
             playerInputMessage.s = Input.GetKey(KeyCode.S) ? 1 : 0;
@@ -45,6 +55,7 @@ public class PlayerInput : NetworkBehaviour
 
             accumulatedMouseX = 0;
             accumulatedMouseY = 0;
+            accumulatedMouse0 = 0;
 
             SendToServer(ByteSerializer.GetBytes(playerInputMessage), Facepunch.Steamworks.Networking.SendType.Unreliable);
 
@@ -80,6 +91,12 @@ public class PlayerInput : NetworkBehaviour
 
         transform.position += movementX * Time.deltaTime * movementSpeed * new Vector3(transform.right.x, 0, transform.right.z).normalized;
         transform.position += movementZ * Time.deltaTime * movementSpeed * new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
+
+        // Spawn projectiles
+        for (int i = 0; i < playerInputMessage.mouse0; i++)
+        {
+            GameServer.Instance.InstantiateInScene(projectilePrefab, transform.position, transform.rotation, null);
+        }
     }
 
     public void StartPlayerInputLoop ()
