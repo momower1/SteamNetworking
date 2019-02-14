@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using SteamNetworking;
 
+[RequireComponent(typeof(Player))]
 public class PlayerInput : NetworkBehaviour
 {
     [SerializeField]
@@ -11,12 +12,10 @@ public class PlayerInput : NetworkBehaviour
     protected float mouseSensitivity = 1;
     [SerializeField]
     protected float movementSpeed = 10;
-    [SerializeField]
-    protected GameObject projectilePrefab;
 
-    private float accumulatedMouseX = 0;
-    private float accumulatedMouseY = 0;
-    private int accumulatedMouse0 = 0;
+    protected Player player;
+    protected Camera playerCamera;
+    protected PlayerInputMessage lastPlayerInputMessage;
 
     protected struct PlayerInputMessage
     {
@@ -29,15 +28,43 @@ public class PlayerInput : NetworkBehaviour
         public int d;
     };
 
+    protected override void Start()
+    {
+        base.Start();
+
+        player = GetComponent<Player>();
+    }
+
     protected override void UpdateClient()
     {
-        accumulatedMouseX += mouseSensitivity * Input.GetAxisRaw("Mouse X");
-        accumulatedMouseY += mouseSensitivity * Input.GetAxisRaw("Mouse Y");
-
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (player.isControlling)
         {
-            accumulatedMouse0++;
+            // Get input
+            float mouseX = mouseSensitivity * Input.GetAxisRaw("Mouse X");
+            float mouseY = mouseSensitivity * Input.GetAxisRaw("Mouse Y");
+            int w = Input.GetKey(KeyCode.W) ? 1 : 0;
+            int a = Input.GetKey(KeyCode.A) ? 1 : 0;
+            int s = Input.GetKey(KeyCode.S) ? 1 : 0;
+            int d = Input.GetKey(KeyCode.D) ? 1 : 0;
+
+            // Simulate camera movement locally
+            SimulateMovement(playerCamera.transform, mouseX, mouseY, w, a, s, d);
         }
+    }
+
+    protected override void UpdateServer()
+    {
+        // Do the same movement as the client already did
+        SimulateMovement
+        (
+            transform,
+            lastPlayerInputMessage.mouseX,
+            lastPlayerInputMessage.mouseY,
+            lastPlayerInputMessage.w,
+            lastPlayerInputMessage.a,
+            lastPlayerInputMessage.s,
+            lastPlayerInputMessage.d
+        );
     }
 
     protected IEnumerator PlayerInputLoop ()
@@ -45,17 +72,12 @@ public class PlayerInput : NetworkBehaviour
         while (true)
         {
             PlayerInputMessage playerInputMessage = new PlayerInputMessage();
-            playerInputMessage.mouseX = accumulatedMouseX;
-            playerInputMessage.mouseY = accumulatedMouseY;
-            playerInputMessage.mouse0 = accumulatedMouse0;
+            playerInputMessage.mouseX = mouseSensitivity * Input.GetAxisRaw("Mouse X");
+            playerInputMessage.mouseY = mouseSensitivity * Input.GetAxisRaw("Mouse Y");
             playerInputMessage.w = Input.GetKey(KeyCode.W) ? 1 : 0;
             playerInputMessage.a = Input.GetKey(KeyCode.A) ? 1 : 0;
             playerInputMessage.s = Input.GetKey(KeyCode.S) ? 1 : 0;
             playerInputMessage.d = Input.GetKey(KeyCode.D) ? 1 : 0;
-
-            accumulatedMouseX = 0;
-            accumulatedMouseY = 0;
-            accumulatedMouse0 = 0;
 
             SendToServer(ByteSerializer.GetBytes(playerInputMessage), Facepunch.Steamworks.Networking.SendType.Unreliable);
 
@@ -65,12 +87,15 @@ public class PlayerInput : NetworkBehaviour
 
     protected override void OnServerReceivedMessageRaw(byte[] data, ulong steamID)
     {
-        PlayerInputMessage playerInputMessage = ByteSerializer.FromBytes<PlayerInputMessage>(data);
+        lastPlayerInputMessage = ByteSerializer.FromBytes<PlayerInputMessage>(data);
+    }
 
-        // Rotate player
-        Vector3 toRotation = transform.rotation.eulerAngles;
-        toRotation.x -= playerInputMessage.mouseY;
-        toRotation.y += playerInputMessage.mouseX;
+    protected void SimulateMovement (Transform target, float mouseX, float mouseY, int w, int a, int s, int d)
+    {
+        // Rotate
+        Vector3 toRotation = target.rotation.eulerAngles;
+        toRotation.x -= mouseY;
+        toRotation.y += mouseX;
 
         // Clamp rotation into possible values to avoid upside down: 0-90, 270-360
         if (toRotation.x > 90 && toRotation.x <= 180)
@@ -83,35 +108,27 @@ public class PlayerInput : NetworkBehaviour
         }
 
         // Assign new rotation
-        transform.rotation = Quaternion.Euler(toRotation);
+        target.rotation = Quaternion.Euler(toRotation);
 
-        // Move player
-        float movementX = playerInputMessage.d - playerInputMessage.a;
-        float movementZ = playerInputMessage.w - playerInputMessage.s;
+        // Move
+        float movementX = d - a;
+        float movementZ = w - s;
 
-        transform.position += movementX * Time.deltaTime * movementSpeed * new Vector3(transform.right.x, 0, transform.right.z).normalized;
-        transform.position += movementZ * Time.deltaTime * movementSpeed * new Vector3(transform.forward.x, 0, transform.forward.z).normalized;
-
-        // Spawn projectiles
-        for (int i = 0; i < playerInputMessage.mouse0; i++)
-        {
-            GameServer.Instance.InstantiateInScene(projectilePrefab, transform.position, transform.rotation, null);
-        }
+        target.position += movementX * Time.deltaTime * movementSpeed * new Vector3(target.right.x, 0, target.right.z).normalized;
+        target.position += movementZ * Time.deltaTime * movementSpeed * new Vector3(target.forward.x, 0, target.forward.z).normalized;
     }
 
     public void StartPlayerInputLoop ()
     {
-        // TODO: Remove
-        networkObject.interpolateOnClient = false;
+        // Lock and hide mouse
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        StartCoroutine(PlayerInputLoop());
-    }
+        // Make sure that the player camera position and player position are in sync
+        playerCamera = Camera.main;
+        playerCamera.transform.position = transform.position;
+        playerCamera.transform.rotation = transform.rotation;
 
-    protected void OnGUI()
-    {
-        GUI.color = Color.green;
-        GUI.DrawTexture(new Rect(Screen.width / 2, Screen.height / 2, Screen.height / 100, Screen.height / 100), Texture2D.whiteTexture);
+        StartCoroutine(PlayerInputLoop());
     }
 }

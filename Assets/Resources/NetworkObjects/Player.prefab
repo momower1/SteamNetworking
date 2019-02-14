@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 2824742043163928072}
   - component: {fileID: 2824742043163928073}
   - component: {fileID: 4993242247719646177}
+  - component: {fileID: 6420284570621719911}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -118,7 +119,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   index: 0
   controllingSteamID: 0
-  playerInput: {fileID: 4993242247719646177}
+  isControlling: 0
 --- !u!114 &4993242247719646177
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -135,6 +136,19 @@ MonoBehaviour:
   inputsPerSec: 60
   mouseSensitivity: 1
   movementSpeed: 10
+--- !u!114 &6420284570621719911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824742043163928074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b81b9f81773f798499f62ec6a9aa835d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  index: -1
   projectilePrefab: {fileID: 447539169474653369, guid: 06984a3d8de21c7478abfd2e551dd17e,
     type: 3}
 --- !u!1 &3640972831006360416

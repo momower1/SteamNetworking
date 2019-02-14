@@ -4,10 +4,11 @@ using UnityEngine;
 using SteamNetworking;
 using System;
 
+[RequireComponent(typeof(PlayerInput))]
 public class Player : NetworkBehaviour
 {
     public ulong controllingSteamID = 0;
-    public PlayerInput playerInput;
+    public bool isControlling = false;
 
     protected override void StartServer()
     {
@@ -22,8 +23,17 @@ public class Player : NetworkBehaviour
         // Attach camera to that player if this client should control it
         if (controllingSteamID == Facepunch.Steamworks.Client.Instance.SteamId)
         {
-            Camera.main.transform.SetParent(transform, false);
-            playerInput.StartPlayerInputLoop();
+            isControlling = true;
+            GetComponent<PlayerInput>().StartPlayerInputLoop();
+        }
+    }
+
+    protected void OnGUI()
+    {
+        if (isControlling)
+        {
+            GUI.color = Color.green;
+            GUI.DrawTexture(new Rect(Screen.width / 2, Screen.height / 2, Screen.height / 100, Screen.height / 100), Texture2D.whiteTexture);
         }
     }
 }
