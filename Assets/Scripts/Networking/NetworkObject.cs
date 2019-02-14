@@ -86,34 +86,35 @@ namespace SteamNetworking
                     // This introduces a bit of latency but does not require any prediction
                     float dt = currentMessage.time - lastMessage.time;
 
+                    // This is the maximal time that movement can be predicted
+                    float maxExtrapolationTime = dt / 2;
+
                     if (dt > 0)
                     {
-                        float interpolationFactor = timeSinceLastMessage / dt;
+                        if (timeExtrapolated < maxExtrapolationTime)
+                        {
+                            float interpolationFactor = timeSinceLastMessage / dt;
 
-                        if (interpolationFactor <= 1)
-                        {
-                            // Interpolate
-                            transform.localPosition = Vector3.Lerp(lastMessage.localPosition, currentMessage.localPosition, interpolationFactor);
-                            transform.localRotation = Quaternion.Lerp(lastMessage.localRotation, currentMessage.localRotation, interpolationFactor);
-                            transform.localScale = Vector3.Lerp(lastMessage.localScale, currentMessage.localScale, interpolationFactor);
-                        }
-                        else
-                        {
-                            if (timeExtrapolated < dt)
+                            // Interpolates and extrapolated when the factor is greater than one
+                            transform.localPosition = Vector3.LerpUnclamped(lastMessage.localPosition, currentMessage.localPosition, interpolationFactor);
+                            transform.localRotation = Quaternion.LerpUnclamped(lastMessage.localRotation, currentMessage.localRotation, interpolationFactor);
+                            transform.localScale = Vector3.LerpUnclamped(lastMessage.localScale, currentMessage.localScale, interpolationFactor);
+
+                            if (interpolationFactor > 1)
                             {
-                                // Extrapolate, then shift the time for the interpolation based on the extrapolated time when the next message arrives
-                                Vector3 velocity = (currentMessage.localPosition - lastMessage.localPosition) / dt;
-                                transform.localPosition += Time.deltaTime * velocity;
-
+                                // Shift the time for the interpolation based on the extrapolated time when the next message arrives
                                 timeExtrapolated += Time.deltaTime;
                                 extrapolated = true;
                             }
-                            else
-                            {
-                                // There is no message coming that can make use of the extrapolation, reset to actual position
-                                transform.localPosition = Vector3.Lerp(transform.localPosition, currentMessage.localPosition, timeSinceLastMessage - dt - timeExtrapolated);
-                                extrapolated = false;
-                            }
+                        }
+                        else
+                        {
+                            // There is no message coming that can make use of the extrapolation, reset to actual position
+                            float interpolationFactor = timeSinceLastMessage - timeExtrapolated - dt;
+                            transform.localPosition = Vector3.Lerp(transform.localPosition, currentMessage.localPosition, interpolationFactor);
+                            transform.localRotation = Quaternion.Lerp(transform.localRotation, currentMessage.localRotation, interpolationFactor);
+                            transform.localScale = Vector3.Lerp(transform.localScale, currentMessage.localScale, interpolationFactor);
+                            extrapolated = false;
                         }
 
                         timeSinceLastMessage += Time.deltaTime;
