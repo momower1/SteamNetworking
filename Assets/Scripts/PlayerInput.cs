@@ -90,6 +90,10 @@ public class PlayerInput : NetworkBehaviour
 
     protected override void OnServerReceivedMessageRaw(byte[] data, ulong steamID)
     {
+        // There is no gaurantee at all that the client message is valid
+        // In order to make sure that the player cannot cheat:
+        // - Check that this is a valid time to receive a message (e.g. message counter)
+        // - Make sure that the WASD input times are lower equal to the interval time of the input rate
         PlayerInputMessage m = ByteSerializer.FromBytes<PlayerInputMessage>(data);
 
         // Do the same movement as the client already did
