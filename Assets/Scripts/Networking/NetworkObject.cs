@@ -37,6 +37,8 @@ namespace SteamNetworking
         private MessageNetworkObject currentMessage = null;
         private MessageNetworkObject lastMessage = null;
         private float timeSinceLastMessage = 0;
+        private float timeExtrapolated = 0;
+        private bool extrapolated = false;
 
         // Handles all the incoming network behaviour messages from the network behaviours
         private Dictionary<int, Action<byte[], ulong>> networkBehaviourEvents = new Dictionary<int, Action<byte[], ulong>>();
@@ -84,12 +86,37 @@ namespace SteamNetworking
                     // This introduces a bit of latency but does not require any prediction
                     float dt = currentMessage.time - lastMessage.time;
 
+                    // This is the maximal time that movement can be predicted
+                    float maxExtrapolationTime = dt / 2;
+
                     if (dt > 0)
                     {
-                        float interpolationFactor = timeSinceLastMessage / dt;
-                        transform.localPosition = Vector3.Lerp(lastMessage.localPosition, currentMessage.localPosition, interpolationFactor);
-                        transform.localRotation = Quaternion.Lerp(lastMessage.localRotation, currentMessage.localRotation, interpolationFactor);
-                        transform.localScale = Vector3.Lerp(lastMessage.localScale, currentMessage.localScale, interpolationFactor);
+                        if (timeExtrapolated < maxExtrapolationTime)
+                        {
+                            float interpolationFactor = timeSinceLastMessage / dt;
+
+                            // Interpolates and extrapolated when the factor is greater than one
+                            transform.localPosition = Vector3.LerpUnclamped(lastMessage.localPosition, currentMessage.localPosition, interpolationFactor);
+                            transform.localRotation = Quaternion.LerpUnclamped(lastMessage.localRotation, currentMessage.localRotation, interpolationFactor);
+                            transform.localScale = Vector3.LerpUnclamped(lastMessage.localScale, currentMessage.localScale, interpolationFactor);
+
+                            if (interpolationFactor > 1)
+                            {
+                                // Shift the time for the interpolation based on the extrapolated time when the next message arrives
+                                timeExtrapolated += Time.deltaTime;
+                                extrapolated = true;
+                            }
+                        }
+                        else
+                        {
+                            // There is no message coming that can make use of the extrapolation, reset to actual position
+                            float interpolationFactor = timeSinceLastMessage - timeExtrapolated - dt;
+                            transform.localPosition = Vector3.Lerp(transform.localPosition, currentMessage.localPosition, interpolationFactor);
+                            transform.localRotation = Quaternion.Lerp(transform.localRotation, currentMessage.localRotation, interpolationFactor);
+                            transform.localScale = Vector3.Lerp(transform.localScale, currentMessage.localScale, interpolationFactor);
+                            extrapolated = false;
+                        }
+
                         timeSinceLastMessage += Time.deltaTime;
                     }
                 }
@@ -140,13 +167,16 @@ namespace SteamNetworking
                     // Save data for interpolation
                     lastMessage = currentMessage;
                     currentMessage = messageNetworkObject;
-                    timeSinceLastMessage = 0;
+                    timeSinceLastMessage = extrapolated ? timeExtrapolated : 0;
+                    timeExtrapolated = 0;
+                    extrapolated = false;
 
-                    // Correct the time of the last message to the time where it should have arrived based on the server hz
-                    // This improves the interpolation when the actual time between messages is way larger than the server hz
+                    // Improves the interpolation when the actual time between messages is way larger than the server hz
+                    // This happens when an object moves after it didn't move for some time and therefore also didn't send messages
+                    // In that case correct the time of the last message to the time where it should have arrived based on the server hz (pessimistic)
                     if (lastMessage != null)
                     {
-                        lastMessage.time = currentMessage.time - (1.0f / GameClient.Instance.GetServerHz());
+                        lastMessage.time = Mathf.Max(lastMessage.time, currentMessage.time - (1.0f / GameClient.Instance.GetServerHz()));
                     }
                 }
                 else
