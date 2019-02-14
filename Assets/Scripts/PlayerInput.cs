@@ -21,12 +21,12 @@ public class PlayerInput : NetworkBehaviour
     {
         public float mouseX;
         public float mouseY;
-        public int w;
-        public int a;
-        public int s;
-        public int d;
+        public float w;
+        public float a;
+        public float s;
+        public float d;
 
-        public PlayerInputMessage (float mouseX, float mouseY, int w, int a, int s, int d)
+        public PlayerInputMessage (float mouseX, float mouseY, float w, float a, float s, float d)
         {
             this.mouseX = mouseX;
             this.mouseY = mouseY;
@@ -49,12 +49,13 @@ public class PlayerInput : NetworkBehaviour
         if (player.isControlling)
         {
             // Get input
+            float dt = Time.deltaTime;
             float mouseX = mouseSensitivity * Input.GetAxisRaw("Mouse X");
             float mouseY = mouseSensitivity * Input.GetAxisRaw("Mouse Y");
-            int w = Input.GetKey(KeyCode.W) ? 1 : 0;
-            int a = Input.GetKey(KeyCode.A) ? 1 : 0;
-            int s = Input.GetKey(KeyCode.S) ? 1 : 0;
-            int d = Input.GetKey(KeyCode.D) ? 1 : 0;
+            float w = Input.GetKey(KeyCode.W) ? dt : 0;
+            float a = Input.GetKey(KeyCode.A) ? dt : 0;
+            float s = Input.GetKey(KeyCode.S) ? dt : 0;
+            float d = Input.GetKey(KeyCode.D) ? dt : 0;
 
             // Accumulate input
             playerInputMessage.mouseX += mouseX;
@@ -95,7 +96,7 @@ public class PlayerInput : NetworkBehaviour
         SimulateMovement(transform, m.mouseX, m.mouseY, m.w, m.a, m.s, m.d);
     }
 
-    protected void SimulateMovement (Transform target, float mouseX, float mouseY, int w, int a, int s, int d)
+    protected void SimulateMovement (Transform target, float mouseX, float mouseY, float w, float a, float s, float d)
     {
         // Rotate
         Vector3 toRotation = target.rotation.eulerAngles;
@@ -119,8 +120,8 @@ public class PlayerInput : NetworkBehaviour
         float movementX = d - a;
         float movementZ = w - s;
 
-        target.position += movementX * Time.deltaTime * movementSpeed * new Vector3(target.right.x, 0, target.right.z).normalized;
-        target.position += movementZ * Time.deltaTime * movementSpeed * new Vector3(target.forward.x, 0, target.forward.z).normalized;
+        target.position += movementX * movementSpeed * new Vector3(target.right.x, 0, target.right.z).normalized;
+        target.position += movementZ * movementSpeed * new Vector3(target.forward.x, 0, target.forward.z).normalized;
     }
 
     public void StartPlayerInputLoop ()
