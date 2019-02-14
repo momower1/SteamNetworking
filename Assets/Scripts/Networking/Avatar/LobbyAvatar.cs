@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-namespace SteamNetworking
+namespace SteamNetworking.Avatar
 {
     public class LobbyAvatar : Avatar
     {

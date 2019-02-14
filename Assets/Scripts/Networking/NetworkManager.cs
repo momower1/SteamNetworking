@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Facepunch.Steamworks;
+using SteamNetworking.GUI;
 
 namespace SteamNetworking
 {

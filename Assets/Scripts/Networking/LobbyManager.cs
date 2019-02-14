@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Facepunch.Steamworks;
+using SteamNetworking.Avatar;
+using SteamNetworking.GUI;
 
 namespace SteamNetworking
 {
