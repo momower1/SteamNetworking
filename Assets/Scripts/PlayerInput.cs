@@ -15,17 +15,26 @@ public class PlayerInput : NetworkBehaviour
 
     protected Player player;
     protected Camera playerCamera;
-    protected PlayerInputMessage lastPlayerInputMessage;
+    protected PlayerInputMessage playerInputMessage;
 
     protected struct PlayerInputMessage
     {
         public float mouseX;
         public float mouseY;
-        public int mouse0;
         public int w;
         public int a;
         public int s;
         public int d;
+
+        public PlayerInputMessage (float mouseX, float mouseY, int w, int a, int s, int d)
+        {
+            this.mouseX = mouseX;
+            this.mouseY = mouseY;
+            this.w = w;
+            this.a = a;
+            this.s = s;
+            this.d = d;
+        }
     };
 
     protected override void Start()
@@ -47,39 +56,27 @@ public class PlayerInput : NetworkBehaviour
             int s = Input.GetKey(KeyCode.S) ? 1 : 0;
             int d = Input.GetKey(KeyCode.D) ? 1 : 0;
 
+            // Accumulate input
+            playerInputMessage.mouseX += mouseX;
+            playerInputMessage.mouseY += mouseY;
+            playerInputMessage.w += w;
+            playerInputMessage.a += a;
+            playerInputMessage.s += s;
+            playerInputMessage.d += d;
+
             // Simulate camera movement locally
             SimulateMovement(playerCamera.transform, mouseX, mouseY, w, a, s, d);
         }
-    }
-
-    protected override void UpdateServer()
-    {
-        // Do the same movement as the client already did
-        SimulateMovement
-        (
-            transform,
-            lastPlayerInputMessage.mouseX,
-            lastPlayerInputMessage.mouseY,
-            lastPlayerInputMessage.w,
-            lastPlayerInputMessage.a,
-            lastPlayerInputMessage.s,
-            lastPlayerInputMessage.d
-        );
     }
 
     protected IEnumerator PlayerInputLoop ()
     {
         while (true)
         {
-            PlayerInputMessage playerInputMessage = new PlayerInputMessage();
-            playerInputMessage.mouseX = mouseSensitivity * Input.GetAxisRaw("Mouse X");
-            playerInputMessage.mouseY = mouseSensitivity * Input.GetAxisRaw("Mouse Y");
-            playerInputMessage.w = Input.GetKey(KeyCode.W) ? 1 : 0;
-            playerInputMessage.a = Input.GetKey(KeyCode.A) ? 1 : 0;
-            playerInputMessage.s = Input.GetKey(KeyCode.S) ? 1 : 0;
-            playerInputMessage.d = Input.GetKey(KeyCode.D) ? 1 : 0;
-
             SendToServer(ByteSerializer.GetBytes(playerInputMessage), Facepunch.Steamworks.Networking.SendType.Unreliable);
+
+            // Reset accumulated input
+            playerInputMessage = new PlayerInputMessage(0, 0, 0, 0, 0, 0);
 
             yield return new WaitForSeconds(1.0f / inputsPerSec);
         }
@@ -87,7 +84,10 @@ public class PlayerInput : NetworkBehaviour
 
     protected override void OnServerReceivedMessageRaw(byte[] data, ulong steamID)
     {
-        lastPlayerInputMessage = ByteSerializer.FromBytes<PlayerInputMessage>(data);
+        PlayerInputMessage m = ByteSerializer.FromBytes<PlayerInputMessage>(data);
+
+        // Do the same movement as the client already did
+        SimulateMovement(transform, m.mouseX, m.mouseY, m.w, m.a, m.s, m.d);
     }
 
     protected void SimulateMovement (Transform target, float mouseX, float mouseY, int w, int a, int s, int d)
