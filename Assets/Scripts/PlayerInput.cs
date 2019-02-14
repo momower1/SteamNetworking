@@ -66,6 +66,11 @@ public class PlayerInput : NetworkBehaviour
 
             // Simulate camera movement locally
             SimulateMovement(playerCamera.transform, mouseX, mouseY, w, a, s, d);
+
+            // Log the actual error between the client camera and the server player
+            Vector3 positionError = playerCamera.transform.localPosition - transform.localPosition;
+            Vector3 rotationError = playerCamera.transform.localRotation.eulerAngles - transform.localRotation.eulerAngles;
+            Debug.Log("Position Error: " + positionError + " Rotation Error: " + rotationError);
         }
     }
 
