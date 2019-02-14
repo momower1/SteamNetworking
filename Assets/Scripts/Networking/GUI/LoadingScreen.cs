@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace SteamNetworking
+namespace SteamNetworking.GUI
 {
     public class LoadingScreen : MonoBehaviour
     {
-        public Transform loadingIcon;
-        public float rotationSpeed;
+        [SerializeField]
+        protected Transform loadingIcon;
+        [SerializeField]
+        protected float rotationSpeed;
 
-        void Update()
+        protected void Update()
         {
             loadingIcon.Rotate(0, 0, Time.deltaTime * rotationSpeed);
         }

@@ -112,7 +112,7 @@ namespace SteamNetworking
         {
             if (!networkObject.onServer && recording)
             {
-                GUI.Label(new Rect(Screen.width / 4, 2 * (Screen.height / 3), Screen.width / 20, Screen.width / 20), recordIcon);
+                UnityEngine.GUI.Label(new Rect(Screen.width / 4, 2 * (Screen.height / 3), Screen.width / 20, Screen.width / 20), recordIcon);
             }
         }
 
