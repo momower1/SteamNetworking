@@ -34,11 +34,8 @@ namespace SteamNetworking
         public bool removeChildRigidbodies = true;
 
         // Interpolation variables
-        private MessageNetworkObject currentMessage = null;
-        private MessageNetworkObject lastMessage = null;
-        private float timeSinceLastMessage = 0;
-        private float timeExtrapolated = 0;
-        private bool extrapolated = false;
+        private float interpolationTime = 0;
+        private LinkedList<MessageNetworkObject> interpolationMessages = new LinkedList<MessageNetworkObject>();
 
         // Handles all the incoming network behaviour messages from the network behaviours
         private Dictionary<int, Action<byte[], ulong>> networkBehaviourEvents = new Dictionary<int, Action<byte[], ulong>>();
@@ -79,45 +76,51 @@ namespace SteamNetworking
         {
             if (!onServer && interpolateOnClient)
             {
-                // Make sure that both messages exist
-                if (currentMessage != null && lastMessage != null)
+                // Find the message that is before and the message after the interpolation time
+                LinkedListNode<MessageNetworkObject> interpolationEnd = interpolationMessages.First;
+
+                // Search for the message that is after the interpolation time
+                while (interpolationEnd != null && interpolationEnd.Value.time <= interpolationTime)
                 {
-                    // Interpolate between the transform from the last and the current message based on the time that passed since the last message
-                    // This introduces a bit of latency but does not require any prediction
-                    float dt = currentMessage.time - lastMessage.time;
+                    interpolationEnd = interpolationEnd.Next;
+                }
 
-                    // This is the maximal time that movement can be predicted
-                    float maxExtrapolationTime = dt / 2;
+                if (interpolationEnd != null)
+                {
+                    // Found message after the interpolation time, the message before that must be the start
+                    LinkedListNode<MessageNetworkObject> interpolationStart = interpolationEnd.Previous;
 
-                    if (dt > 0)
+                    // Only interpolate if there are two follow up messages
+                    if (interpolationStart != null)// && interpolationEnd.Next != null)
                     {
-                        if (timeExtrapolated < maxExtrapolationTime)
+                        // Found message before the interpolation time, remove all the no longer needed previous entries from the list
+                        while (!interpolationMessages.First.Equals(interpolationStart))
                         {
-                            float interpolationFactor = timeSinceLastMessage / dt;
-
-                            // Interpolates and extrapolated when the factor is greater than one
-                            transform.localPosition = Vector3.LerpUnclamped(lastMessage.localPosition, currentMessage.localPosition, interpolationFactor);
-                            transform.localRotation = Quaternion.LerpUnclamped(lastMessage.localRotation, currentMessage.localRotation, interpolationFactor);
-                            transform.localScale = Vector3.LerpUnclamped(lastMessage.localScale, currentMessage.localScale, interpolationFactor);
-
-                            if (interpolationFactor > 1)
-                            {
-                                // Shift the time for the interpolation based on the extrapolated time when the next message arrives
-                                timeExtrapolated += Time.deltaTime;
-                                extrapolated = true;
-                            }
-                        }
-                        else
-                        {
-                            // There is no message coming that can make use of the extrapolation, reset to actual position
-                            float interpolationFactor = timeSinceLastMessage - timeExtrapolated - dt;
-                            transform.localPosition = Vector3.Lerp(transform.localPosition, currentMessage.localPosition, interpolationFactor);
-                            transform.localRotation = Quaternion.Lerp(transform.localRotation, currentMessage.localRotation, interpolationFactor);
-                            transform.localScale = Vector3.Lerp(transform.localScale, currentMessage.localScale, interpolationFactor);
-                            extrapolated = false;
+                            interpolationMessages.RemoveFirst();
                         }
 
-                        timeSinceLastMessage += Time.deltaTime;
+                        // Improves the interpolation when the actual time between messages is way larger than the server hz
+                        // This happens when an object moves after it didn't move for some time and therefore also didn't send messages
+                        // In that case correct the time of the last message to the time where it should have arrived based on the server hz (pessimistic)
+                        interpolationStart.Value.time = Mathf.Max(interpolationStart.Value.time, interpolationEnd.Value.time - (1.0f / GameClient.Instance.GetServerHz()));
+
+                        // Interpolate between both messages
+                        float interpolationFactor = (interpolationTime - interpolationStart.Value.time) / (interpolationEnd.Value.time - interpolationStart.Value.time);
+
+                        transform.localPosition = Vector3.Lerp(interpolationStart.Value.localPosition, interpolationEnd.Value.localPosition, interpolationFactor);
+                        transform.localRotation = Quaternion.Lerp(interpolationStart.Value.localRotation, interpolationEnd.Value.localRotation, interpolationFactor);
+                        transform.localScale = Vector3.Lerp(interpolationStart.Value.localScale, interpolationEnd.Value.localScale, interpolationFactor);
+
+                        interpolationTime += Time.deltaTime;
+                    }
+                    else
+                    {
+                        // There is no previous message, just take the data from the end without interpolating
+                        interpolationTime = interpolationEnd.Value.time;
+
+                        transform.localPosition = interpolationEnd.Value.localPosition;
+                        transform.localRotation = interpolationEnd.Value.localRotation;
+                        transform.localScale = interpolationEnd.Value.localScale;
                     }
                 }
             }
@@ -164,20 +167,7 @@ namespace SteamNetworking
             {
                 if (interpolateOnClient)
                 {
-                    // Save data for interpolation
-                    lastMessage = currentMessage;
-                    currentMessage = messageNetworkObject;
-                    timeSinceLastMessage = extrapolated ? timeExtrapolated : 0;
-                    timeExtrapolated = 0;
-                    extrapolated = false;
-
-                    // Improves the interpolation when the actual time between messages is way larger than the server hz
-                    // This happens when an object moves after it didn't move for some time and therefore also didn't send messages
-                    // In that case correct the time of the last message to the time where it should have arrived based on the server hz (pessimistic)
-                    if (lastMessage != null)
-                    {
-                        lastMessage.time = Mathf.Max(lastMessage.time, currentMessage.time - (1.0f / GameClient.Instance.GetServerHz()));
-                    }
+                    interpolationMessages.AddLast(messageNetworkObject);
                 }
                 else
                 {
