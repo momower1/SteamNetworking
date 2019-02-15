@@ -13,7 +13,7 @@ public class Player : NetworkBehaviour
     protected override void StartServer()
     {
         // Synchronize the assigned steam id
-        SendToAllClients(BitConverter.GetBytes(controllingSteamID), Facepunch.Steamworks.Networking.SendType.Reliable);
+        SendToAllClients(BitConverter.GetBytes(controllingSteamID), SendType.Reliable);
     }
 
     protected override void OnClientReceivedMessageRaw(byte[] data, ulong steamID)

@@ -25,7 +25,7 @@ public class PlayerSlingshot : NetworkBehaviour
             // Send message to shoot projectile
             if (Input.GetKeyDown(KeyCode.Mouse0))
             {
-                SendToServer("Slingshot", Facepunch.Steamworks.Networking.SendType.Reliable);
+                SendToServer("Slingshot", SendType.Reliable);
             }
         }
     }

@@ -79,7 +79,7 @@ public class PlayerInput : NetworkBehaviour
     {
         while (true)
         {
-            SendToServer(ByteSerializer.GetBytes(playerInputMessage), Facepunch.Steamworks.Networking.SendType.Unreliable);
+            SendToServer(ByteSerializer.GetBytes(playerInputMessage), SendType.Unreliable);
 
             // Reset accumulated input
             playerInputMessage = new PlayerInputMessage(0, 0, 0, 0, 0, 0);
