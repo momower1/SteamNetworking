@@ -11,8 +11,10 @@ GameObject:
   - component: {fileID: 2824742043163928079}
   - component: {fileID: 2423525733409377439}
   - component: {fileID: 4786977612682639241}
+  - component: {fileID: 4861347266938646981}
   - component: {fileID: 2824742043163928072}
   - component: {fileID: 2824742043163928073}
+  - component: {fileID: 5607449339991283906}
   - component: {fileID: 4993242247719646177}
   - component: {fileID: 6420284570621719911}
   m_Layer: 0
@@ -82,6 +84,20 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!136 &4861347266938646981
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824742043163928074}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &2824742043163928072
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -120,6 +136,20 @@ MonoBehaviour:
   index: 0
   controllingSteamID: 0
   isControlling: 0
+--- !u!114 &5607449339991283906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2824742043163928074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 963a33f48a5127e4881253113c4edd1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  index: 1
+  health: 1
 --- !u!114 &4993242247719646177
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -132,7 +162,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1846babb800e6dd48998e1fc0640a5cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  index: 1
+  index: 2
   inputsPerSec: 60
   mouseSensitivity: 1
   movementSpeed: 10
@@ -148,7 +178,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b81b9f81773f798499f62ec6a9aa835d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  index: 2
+  index: 3
   projectilePrefab: {fileID: 447539169474653369, guid: 06984a3d8de21c7478abfd2e551dd17e,
     type: 3}
 --- !u!1 &3640972831006360416

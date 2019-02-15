@@ -27,13 +27,4 @@ public class Player : NetworkBehaviour
             GetComponent<PlayerInput>().StartPlayerInputLoop();
         }
     }
-
-    protected void OnGUI()
-    {
-        if (isControlling)
-        {
-            GUI.color = Color.green;
-            GUI.DrawTexture(new Rect(Screen.width / 2, Screen.height / 2, Screen.height / 100, Screen.height / 100), Texture2D.whiteTexture);
-        }
-    }
 }

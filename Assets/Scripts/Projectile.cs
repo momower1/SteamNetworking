@@ -5,13 +5,18 @@ using SteamNetworking;
 
 public class Projectile : NetworkBehaviour
 {
-    public float speed = 10;
-    public float timeUntilDestroy = 10;
+    [SerializeField]
+    protected float speed = 10;
+    [SerializeField]
+    protected float timeUntilDestroy = 10;
+
+    protected override void StartServer()
+    {
+        GetComponent<Rigidbody>().velocity = speed * transform.forward;
+    }
 
     protected override void UpdateServer()
     {
-        transform.position += speed * Time.deltaTime * transform.forward;
-
         if (timeUntilDestroy <= 0)
         {
             Destroy(gameObject);

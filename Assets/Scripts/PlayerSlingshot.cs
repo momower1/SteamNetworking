@@ -33,6 +33,15 @@ public class PlayerSlingshot : NetworkBehaviour
     protected override void OnServerReceivedMessageRaw(byte[] data, ulong steamID)
     {
         // Spawn projectile
-        GameServer.Instance.InstantiateInScene(projectilePrefab, transform.position, transform.rotation, null);
+        GameServer.Instance.InstantiateInScene(projectilePrefab, transform.position + transform.forward, transform.rotation, null);
+    }
+
+    protected void OnGUI()
+    {
+        if (player.isControlling)
+        {
+            GUI.color = Color.green;
+            GUI.DrawTexture(new Rect(Screen.width / 2, Screen.height / 2, Screen.height / 100, Screen.height / 100), Texture2D.whiteTexture);
+        }
     }
 }
