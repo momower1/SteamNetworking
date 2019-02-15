@@ -15,10 +15,13 @@ public class PlayerInput : NetworkBehaviour
 
     protected Player player;
     protected Camera playerCamera;
+    protected int playerTransformID = 0;
     protected PlayerInputMessage playerInputMessage;
+    protected Dictionary<int, PlayerTransform> lastPlayerTransforms;
 
     protected struct PlayerInputMessage
     {
+        public int id;
         public float mouseX;
         public float mouseY;
         public float w;
@@ -26,8 +29,9 @@ public class PlayerInput : NetworkBehaviour
         public float s;
         public float d;
 
-        public PlayerInputMessage (float mouseX, float mouseY, float w, float a, float s, float d)
+        public PlayerInputMessage (int id, float mouseX, float mouseY, float w, float a, float s, float d)
         {
+            this.id = id;
             this.mouseX = mouseX;
             this.mouseY = mouseY;
             this.w = w;
@@ -37,11 +41,20 @@ public class PlayerInput : NetworkBehaviour
         }
     };
 
+    protected struct PlayerTransform
+    {
+        public int id;
+        public Vector3 localPosition;
+        public Quaternion localRotation;
+        public Vector3 localScale;
+    };
+
     protected override void Start()
     {
         base.Start();
 
         player = GetComponent<Player>();
+        lastPlayerTransforms = new Dictionary<int, PlayerTransform>();
     }
 
     protected override void UpdateClient()
@@ -67,11 +80,6 @@ public class PlayerInput : NetworkBehaviour
 
             // Simulate camera movement locally
             SimulateMovement(playerCamera.transform, mouseX, mouseY, w, a, s, d);
-
-            // Log the actual error between the client camera and the server player
-            Vector3 positionError = playerCamera.transform.localPosition - transform.localPosition;
-            Vector3 rotationError = playerCamera.transform.localRotation.eulerAngles - transform.localRotation.eulerAngles;
-            Debug.Log("Position Error: " + positionError + " Rotation Error: " + rotationError);
         }
     }
 
@@ -81,8 +89,17 @@ public class PlayerInput : NetworkBehaviour
         {
             SendToServer(ByteSerializer.GetBytes(playerInputMessage), SendType.Unreliable);
 
+            // Save the last local player transform in order to compare it to the servers later
+            PlayerTransform playerTransform = new PlayerTransform();
+            playerTransform.id = playerInputMessage.id;
+            playerTransform.localPosition = playerCamera.transform.localPosition;
+            playerTransform.localRotation = playerCamera.transform.localRotation;
+            playerTransform.localScale = playerCamera.transform.localScale;
+            lastPlayerTransforms[playerTransform.id] = playerTransform;
+
             // Reset accumulated input
-            playerInputMessage = new PlayerInputMessage(0, 0, 0, 0, 0, 0);
+            playerTransformID++;
+            playerInputMessage = new PlayerInputMessage(playerTransformID, 0, 0, 0, 0, 0, 0);
 
             yield return new WaitForSeconds(1.0f / inputsPerSec);
         }
@@ -98,6 +115,41 @@ public class PlayerInput : NetworkBehaviour
 
         // Do the same movement as the client already did
         SimulateMovement(transform, m.mouseX, m.mouseY, m.w, m.a, m.s, m.d);
+
+        // Send the result back to the client in order to compare and correct it
+        PlayerTransform playerTransform = new PlayerTransform();
+        playerTransform.id = m.id;
+        playerTransform.localPosition = transform.localPosition;
+        playerTransform.localRotation = transform.localRotation;
+        playerTransform.localScale = transform.localScale;
+
+        SendToClient(steamID, ByteSerializer.GetBytes(playerTransform), SendType.Unreliable);
+    }
+
+    protected override void OnClientReceivedMessageRaw(byte[] data, ulong steamID)
+    {
+        // Get the result of the server simulation
+        PlayerTransform playerTransform = ByteSerializer.FromBytes<PlayerTransform>(data);
+
+        // Find the corresponding transform
+        if (lastPlayerTransforms.ContainsKey(playerTransform.id))
+        {
+            PlayerTransform lastPlayerTransform = lastPlayerTransforms[playerTransform.id];
+
+            // The values should be the same
+            // Log the actual error between the client camera and the server player
+            Vector3 positionError = playerTransform.localPosition - lastPlayerTransform.localPosition;
+            Vector3 rotationError = playerTransform.localRotation.eulerAngles - lastPlayerTransform.localRotation.eulerAngles;
+            Vector3 scaleError = playerTransform.localScale - lastPlayerTransform.localScale;
+
+            // Correct error
+            playerCamera.transform.localPosition += positionError;
+            playerCamera.transform.Rotate(rotationError, Space.Self);
+            playerCamera.transform.localScale += scaleError;
+
+            // Any other corrections will be wrong after this one because we already corrected a bit
+            lastPlayerTransforms.Clear();
+        }
     }
 
     protected void SimulateMovement (Transform target, float mouseX, float mouseY, float w, float a, float s, float d)
