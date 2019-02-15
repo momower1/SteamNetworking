@@ -41,7 +41,7 @@ namespace SteamNetworking.Test
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 MessageMove message = new MessageMove(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), true);
-                SendToServer(ByteSerializer.GetBytes(message), Facepunch.Steamworks.Networking.SendType.Reliable);
+                SendToServer(ByteSerializer.GetBytes(message), SendType.Reliable);
             }
 
             if (Input.GetKeyDown(KeyCode.I))
@@ -60,7 +60,7 @@ namespace SteamNetworking.Test
             while (true)
             {
                 MessageMove message = new MessageMove(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), false);
-                SendToServer(ByteSerializer.GetBytes(message), Facepunch.Steamworks.Networking.SendType.Unreliable);
+                SendToServer(ByteSerializer.GetBytes(message), SendType.Unreliable);
 
                 yield return new WaitForSeconds(1.0f / inputsPerSec);
             }

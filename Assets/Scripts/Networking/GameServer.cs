@@ -59,7 +59,7 @@ namespace SteamNetworking
             {
                 yield return new WaitForSecondsRealtime(1.0f / hz);
 
-                SendAllNetworkObjects(onlySendChanges, Facepunch.Steamworks.Networking.SendType.Unreliable);
+                SendAllNetworkObjects(onlySendChanges, SendType.Unreliable);
             }
         }
 
@@ -73,7 +73,7 @@ namespace SteamNetworking
             return depth;
         }
 
-        private void SendAllNetworkObjects (bool onlySendChangedTransforms, Facepunch.Steamworks.Networking.SendType sendType)
+        private void SendAllNetworkObjects (bool onlySendChangedTransforms, SendType sendType)
         {
             // Save all network object messages that need to be sended into one pool
             // Sort the pool by the depth of the transform in the hierarchy
@@ -101,7 +101,7 @@ namespace SteamNetworking
             // Standard is UDP packet size, 1200 bytes
             int maximumTransmissionLength = 1200;
 
-            if (sendType == Facepunch.Steamworks.Networking.SendType.Reliable)
+            if (sendType == SendType.Reliable)
             {
                 // TCP packet, up to 1MB
                 maximumTransmissionLength = 1000000;
@@ -161,7 +161,7 @@ namespace SteamNetworking
             {
                 // Make sure that objects are spawned on the server (with UDP it could happen that they don't spawn)
                 MessageNetworkObject message = new MessageNetworkObject(networkObject);
-                NetworkManager.Instance.SendToAllClients(message.ToBytes(), NetworkMessageType.NetworkObject, Facepunch.Steamworks.Networking.SendType.Reliable);
+                NetworkManager.Instance.SendToAllClients(message.ToBytes(), NetworkMessageType.NetworkObject, SendType.Reliable);
             }
 
             networkObjects.Add(networkObject.networkID, networkObject);
@@ -180,7 +180,7 @@ namespace SteamNetworking
         public void SendMessageDestroyNetworkObject(NetworkObject networkObject)
         {
             byte[] data = System.BitConverter.GetBytes(networkObject.networkID);
-            NetworkManager.Instance.SendToAllClients(data, NetworkMessageType.DestroyNetworkObject, Facepunch.Steamworks.Networking.SendType.Reliable);
+            NetworkManager.Instance.SendToAllClients(data, NetworkMessageType.DestroyNetworkObject, SendType.Reliable);
         }
 
         void OnMessageInitialization(byte[] data, ulong steamID)
@@ -205,12 +205,12 @@ namespace SteamNetworking
                 allClientsInitialized = true;
 
                 // Make sure that all the objects on the server are spawned for all clients
-                SendAllNetworkObjects(false, Facepunch.Steamworks.Networking.SendType.Reliable);
+                SendAllNetworkObjects(false, SendType.Reliable);
                 NetworkManager.Instance.serverMessageEvents[NetworkMessageType.Initialization] -= OnMessageInitialization;
 
                 // Answer to all the clients that the initialization finished
                 // This works because the messages are reliable and in order (meaning all the objects on the client must have spawned when this message arrives)
-                NetworkManager.Instance.SendToAllClients(data, NetworkMessageType.Initialization, Facepunch.Steamworks.Networking.SendType.Reliable);
+                NetworkManager.Instance.SendToAllClients(data, NetworkMessageType.Initialization, SendType.Reliable);
 
                 // Start the server loop and invoke all subscribed actions
                 StartCoroutine(ServerUpdate());
@@ -223,7 +223,7 @@ namespace SteamNetworking
             // Send the time back but also append the current server hz
             ArrayList tmp = new ArrayList(data);
             tmp.AddRange(System.BitConverter.GetBytes(hz));
-            NetworkManager.Instance.SendToClient(steamID, (byte[])tmp.ToArray(typeof(byte)), NetworkMessageType.PingPong, Facepunch.Steamworks.Networking.SendType.Unreliable);
+            NetworkManager.Instance.SendToClient(steamID, (byte[])tmp.ToArray(typeof(byte)), NetworkMessageType.PingPong, SendType.Unreliable);
         }
 
         void OnMessageNetworkBehaviour(byte[] data, ulong steamID)

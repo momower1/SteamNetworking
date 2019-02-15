@@ -63,7 +63,7 @@ namespace SteamNetworking
 
             // The NetworkBehaviour on the server has to be sure that this object spawned and listens to messages from the server
             MessageNetworkBehaviourInitialized message = new MessageNetworkBehaviourInitialized(networkObject.networkID, index);
-            NetworkManager.Instance.SendToServer(ByteSerializer.GetBytes(message), NetworkMessageType.NetworkBehaviourInitialized, Facepunch.Steamworks.Networking.SendType.Reliable);
+            NetworkManager.Instance.SendToServer(ByteSerializer.GetBytes(message), NetworkMessageType.NetworkBehaviourInitialized, SendType.Reliable);
         }
 
         private void OnNetworkBehaviourInitialized(ulong steamID)
@@ -92,7 +92,7 @@ namespace SteamNetworking
                         // All clients are ready to be initialized, send a message to initialize all of them at the same time
                         initialized = true;
                         MessageNetworkBehaviourInitialized message = new MessageNetworkBehaviourInitialized(networkObject.networkID, index);
-                        NetworkManager.Instance.SendToAllClients(ByteSerializer.GetBytes(message), NetworkMessageType.NetworkBehaviourInitialized, Facepunch.Steamworks.Networking.SendType.Reliable);
+                        NetworkManager.Instance.SendToAllClients(ByteSerializer.GetBytes(message), NetworkMessageType.NetworkBehaviourInitialized, SendType.Reliable);
                         StartServer();
                     }
                 }
@@ -116,36 +116,36 @@ namespace SteamNetworking
             }
         }
 
-        protected void SendToServer(byte[] data, Facepunch.Steamworks.Networking.SendType sendType)
+        protected void SendToServer(byte[] data, SendType sendType)
         {
             MessageNetworkBehaviour message = new MessageNetworkBehaviour(networkObject.networkID, index, data);
             NetworkManager.Instance.SendToServer(message.ToBytes(), NetworkMessageType.NetworkBehaviour, sendType);
         }
 
 
-        protected void SendToServer(string message, Facepunch.Steamworks.Networking.SendType sendType = Facepunch.Steamworks.Networking.SendType.Reliable)
+        protected void SendToServer(string message, SendType sendType = SendType.Reliable)
         {
             SendToServer(System.Text.Encoding.UTF8.GetBytes(message), sendType);
         }
 
-        protected void SendToClient(ulong steamID, byte[] data, Facepunch.Steamworks.Networking.SendType sendType)
+        protected void SendToClient(ulong steamID, byte[] data, SendType sendType)
         {
             MessageNetworkBehaviour message = new MessageNetworkBehaviour(networkObject.networkID, index, data);
             NetworkManager.Instance.SendToClient(steamID, message.ToBytes(), NetworkMessageType.NetworkBehaviour, sendType);
         }
 
-        protected void SendToClient(ulong steamID, string message, Facepunch.Steamworks.Networking.SendType sendType = Facepunch.Steamworks.Networking.SendType.Reliable)
+        protected void SendToClient(ulong steamID, string message, SendType sendType = SendType.Reliable)
         {
             SendToClient(steamID, System.Text.Encoding.UTF8.GetBytes(message), sendType);
         }
 
-        protected void SendToAllClients(byte[] data, Facepunch.Steamworks.Networking.SendType sendType)
+        protected void SendToAllClients(byte[] data, SendType sendType)
         {
             MessageNetworkBehaviour message = new MessageNetworkBehaviour(networkObject.networkID, index, data);
             NetworkManager.Instance.SendToAllClients(message.ToBytes(), NetworkMessageType.NetworkBehaviour, sendType);
         }
 
-        protected void SendToAllClients(string message, Facepunch.Steamworks.Networking.SendType sendType = Facepunch.Steamworks.Networking.SendType.Reliable)
+        protected void SendToAllClients(string message, SendType sendType = SendType.Reliable)
         {
             SendToAllClients(System.Text.Encoding.UTF8.GetBytes(message), sendType);
         }
