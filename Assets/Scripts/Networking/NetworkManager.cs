@@ -142,7 +142,7 @@ namespace SteamNetworking
             return true;
         }
 
-        void OnConnectionFailed(ulong steamID, Facepunch.Steamworks.Networking.SessionError sessionError)
+        void OnConnectionFailed(ulong steamID, Networking.SessionError sessionError)
         {
             DialogBox.Show("Connection failed with user " + steamID + ", " + sessionError, false, false, null, null);
         }
@@ -167,12 +167,12 @@ namespace SteamNetworking
             }
         }
 
-        private void SendToClient(ulong steamID, byte[] data, int channel, Facepunch.Steamworks.Networking.SendType sendType)
+        private void SendToClient(ulong steamID, byte[] data, int channel, SendType sendType)
         {
             if (client != null && client.IsValid)
             {
                 // Send the message to the client on the channel of this message type
-                if (!client.Networking.SendP2PPacket(steamID, data, data.Length, sendType, channel))
+                if (!client.Networking.SendP2PPacket(steamID, data, data.Length, sendType.GetNetworkingSendType(), channel))
                 {
                     Debug.Log("Could not send peer to peer packet to user " + steamID);
                 }
@@ -183,12 +183,12 @@ namespace SteamNetworking
             }
         }
 
-        public void SendToClient(ulong steamID, byte[] data, NetworkMessageType networkMessageType, Facepunch.Steamworks.Networking.SendType sendType)
+        public void SendToClient(ulong steamID, byte[] data, NetworkMessageType networkMessageType, SendType sendType)
         {
             SendToClient(steamID, data, (int)networkMessageType, sendType);
         }
 
-        public void SendToAllClients(byte[] data, NetworkMessageType networkMessageType, Facepunch.Steamworks.Networking.SendType sendType)
+        public void SendToAllClients(byte[] data, NetworkMessageType networkMessageType, SendType sendType)
         {
             if (client != null && client.IsValid)
             {
@@ -201,7 +201,7 @@ namespace SteamNetworking
             }
         }
 
-        public void SendToServer(byte[] data, NetworkMessageType networkMessageType, Facepunch.Steamworks.Networking.SendType sendType)
+        public void SendToServer(byte[] data, NetworkMessageType networkMessageType, SendType sendType)
         {
             // Messages for the server are sent on a different channel than messages for a client
             // This way the client knows if the incoming message is for him as a client or him as a server

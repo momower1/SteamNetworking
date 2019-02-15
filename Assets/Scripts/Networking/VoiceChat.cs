@@ -78,7 +78,7 @@ namespace SteamNetworking
             {
                 if (mirror || steamID != Facepunch.Steamworks.Client.Instance.SteamId)
                 {
-                    SendToClient(steamID, compressedData, Facepunch.Steamworks.Networking.SendType.Reliable);
+                    SendToClient(steamID, compressedData, SendType.Reliable);
                 }
             }
         }

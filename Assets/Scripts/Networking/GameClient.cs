@@ -77,7 +77,7 @@ namespace SteamNetworking
             if (Time.time - lastPingTime > (1.0f / pingsPerSec))
             {
                 byte[] data = System.BitConverter.GetBytes(Time.time);
-                NetworkManager.Instance.SendToServer(data, NetworkMessageType.PingPong, Facepunch.Steamworks.Networking.SendType.Unreliable);
+                NetworkManager.Instance.SendToServer(data, NetworkMessageType.PingPong, SendType.Unreliable);
                 lastPingTime = Time.time;
             }
         }
@@ -88,7 +88,7 @@ namespace SteamNetworking
             {
                 // Send a message to initialize the server
                 byte[] data = System.Text.Encoding.UTF8.GetBytes("Initialization");
-                NetworkManager.Instance.SendToServer(data, NetworkMessageType.Initialization, Facepunch.Steamworks.Networking.SendType.Reliable);
+                NetworkManager.Instance.SendToServer(data, NetworkMessageType.Initialization, SendType.Reliable);
 
                 yield return new WaitForSecondsRealtime(0.5f);
             }

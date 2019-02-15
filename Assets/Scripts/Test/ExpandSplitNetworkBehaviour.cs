@@ -22,13 +22,13 @@ namespace SteamNetworking.Test
             if (Input.GetKeyDown(KeyCode.Return))
             {
                 MessageExpandSplit message = new MessageExpandSplit(true);
-                SendToServer(ByteSerializer.GetBytes(message), Facepunch.Steamworks.Networking.SendType.Reliable);
+                SendToServer(ByteSerializer.GetBytes(message), SendType.Reliable);
             }
 
             if (Input.GetKeyDown(KeyCode.Backspace))
             {
                 MessageExpandSplit message = new MessageExpandSplit(false);
-                SendToServer(ByteSerializer.GetBytes(message), Facepunch.Steamworks.Networking.SendType.Reliable);
+                SendToServer(ByteSerializer.GetBytes(message), SendType.Reliable);
             }
         }
 

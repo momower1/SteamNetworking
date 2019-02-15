@@ -165,7 +165,7 @@ namespace SteamNetworking
                     {
                         // Send the game start message only once
                         byte[] data = System.Text.Encoding.UTF8.GetBytes("LobbyStartGame");
-                        NetworkManager.Instance.SendToAllClients(data, NetworkMessageType.StartGame, Facepunch.Steamworks.Networking.SendType.Reliable);
+                        NetworkManager.Instance.SendToAllClients(data, NetworkMessageType.StartGame, SendType.Reliable);
                         gameStarted = true;
                     }
                 }
