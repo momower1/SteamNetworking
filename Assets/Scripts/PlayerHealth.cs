@@ -27,7 +27,10 @@ public class PlayerHealth : NetworkBehaviour
 
     protected void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Projectile"))
+        Projectile projectile = other.GetComponent<Projectile>();
+
+        // Only take damage if the projectile was shot by another player
+        if (projectile != null && projectile.playerSteamID != player.controllingSteamID)
         {
             // Take damage
             health = Mathf.Clamp01(health - 0.1f);
