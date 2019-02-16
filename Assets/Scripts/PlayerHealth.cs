@@ -25,9 +25,9 @@ public class PlayerHealth : NetworkBehaviour
         health = BitConverter.ToSingle(data, 0);
     }
 
-    protected void OnCollisionEnter(Collision collision)
+    protected void OnTriggerEnter(Collider other)
     {
-        if (collision.transform.CompareTag("Projectile"))
+        if (other.CompareTag("Projectile"))
         {
             // Take damage
             health = Mathf.Clamp01(health - 0.1f);
@@ -36,7 +36,7 @@ public class PlayerHealth : NetworkBehaviour
             SendToAllClients(BitConverter.GetBytes(health), SendType.Reliable);
 
             // Destroy projectile
-            Destroy(collision.gameObject);
+            Destroy(other.gameObject);
         }
     }
 
