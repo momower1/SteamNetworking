@@ -9,7 +9,6 @@ public class PlayerHealth : NetworkBehaviour
 {
     [SerializeField, Range(0, 1)]
     protected float health = 1.0f;
-    protected bool dead = false;
 
     protected Player player;
 
@@ -20,29 +19,40 @@ public class PlayerHealth : NetworkBehaviour
         player = GetComponent<Player>();
     }
 
+    protected override void Update()
+    {
+        base.Update();
+
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            health = 0;
+        }
+    }
+
     protected override void UpdateClient()
     {
-        if (dead)
+        if (player.isControlling)
         {
-            // Synchronize the cameras
-            Camera playerCamera = Camera.main;
-            playerCamera.transform.position = transform.position;
-            playerCamera.transform.rotation = transform.rotation;
-        }
-        else if (health <= 0)
-        {
-            dead = true;
-
-            // Die on the client, make sure that the player cannot move anymore
-            player.isControlling = false;
+            if (player.isDead)
+            {
+                // Synchronize the cameras
+                Camera playerCamera = Camera.main;
+                playerCamera.transform.position = transform.position;
+                playerCamera.transform.rotation = transform.rotation;
+            }
+            else if (health <= 0)
+            {
+                // Die on the client, make sure that the player cannot move anymore
+                player.isDead = true;
+            }
         }
     }
 
     protected override void UpdateServer()
     {
-        if (!dead && health <= 0)
+        if (!player.isDead && health <= 0)
         {
-            dead = true;
+            player.isDead = true;
 
             // Die on the server
             StartCoroutine(DieOnServer());
@@ -97,12 +107,13 @@ public class PlayerHealth : NetworkBehaviour
             GUI.DrawTexture(healthbar, Texture2D.whiteTexture);
             GUI.color = Color.green;
             GUI.DrawTexture(new Rect(healthbar.x, healthbar.y, health * healthbar.width, healthbar.height), Texture2D.whiteTexture);
-        }
 
-        if (!networkObject.onServer && dead)
-        {
-            GUI.color = Color.red;
-            GUI.Label(new Rect(Screen.width / 2, Screen.height / 2, Screen.width / 2, Screen.height / 2), "You are dead");
+            if (player.isDead)
+            {
+                // Deadscreen
+                GUI.color = Color.red;
+                GUI.Label(new Rect(Screen.width / 2, Screen.height / 2, Screen.width / 2, Screen.height / 2), "You are dead");
+            }
         }
     }
 }

@@ -59,7 +59,7 @@ public class PlayerMovement : NetworkBehaviour
 
     protected override void UpdateClient()
     {
-        if (player.isControlling)
+        if (player.isControlling && !player.isDead)
         {
             // Get input
             float dt = Time.deltaTime;
@@ -85,7 +85,7 @@ public class PlayerMovement : NetworkBehaviour
 
     protected IEnumerator PlayerInputLoop ()
     {
-        while (player.isControlling)
+        while (player.isControlling && !player.isDead)
         {
             SendToServer(ByteSerializer.GetBytes(playerInputMessage), SendType.Unreliable);
 

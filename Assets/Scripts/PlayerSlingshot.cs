@@ -20,7 +20,7 @@ public class PlayerSlingshot : NetworkBehaviour
 
     protected override void UpdateClient()
     {
-        if (player.isControlling)
+        if (player.isControlling && !player.isDead)
         {
             // Send message to shoot projectile
             if (Input.GetKeyDown(KeyCode.Mouse0))
@@ -39,8 +39,9 @@ public class PlayerSlingshot : NetworkBehaviour
 
     protected void OnGUI()
     {
-        if (player.isControlling)
+        if (player.isControlling && !player.isDead)
         {
+            // Crosshair
             GUI.color = Color.green;
             GUI.DrawTexture(new Rect(Screen.width / 2, Screen.height / 2, Screen.height / 100, Screen.height / 100), Texture2D.whiteTexture);
         }
