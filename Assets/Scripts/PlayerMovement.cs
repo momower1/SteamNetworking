@@ -85,7 +85,7 @@ public class PlayerMovement : NetworkBehaviour
 
     protected IEnumerator PlayerInputLoop ()
     {
-        while (true)
+        while (player.isControlling)
         {
             SendToServer(ByteSerializer.GetBytes(playerInputMessage), SendType.Unreliable);
 
@@ -136,8 +136,7 @@ public class PlayerMovement : NetworkBehaviour
         {
             PlayerTransform lastPlayerTransform = lastPlayerTransforms[playerTransform.id];
 
-            // The values should be the same
-            // Log the actual error between the client camera and the server player
+            // The values should be the same in a perfect world
             Vector3 positionError = playerTransform.localPosition - lastPlayerTransform.localPosition;
             Quaternion rotationError = Quaternion.Inverse(lastPlayerTransform.localRotation) * playerTransform.localRotation;
             Vector3 scaleError = playerTransform.localScale - lastPlayerTransform.localScale;

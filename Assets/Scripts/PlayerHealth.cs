@@ -9,6 +9,7 @@ public class PlayerHealth : NetworkBehaviour
 {
     [SerializeField, Range(0, 1)]
     protected float health = 1.0f;
+    protected bool dead = false;
 
     protected Player player;
 
@@ -17,6 +18,49 @@ public class PlayerHealth : NetworkBehaviour
         base.Start();
 
         player = GetComponent<Player>();
+    }
+
+    protected override void UpdateClient()
+    {
+        if (dead)
+        {
+            // Synchronize the cameras
+            Camera playerCamera = Camera.main;
+            playerCamera.transform.position = transform.position;
+            playerCamera.transform.rotation = transform.rotation;
+        }
+        else if (health <= 0)
+        {
+            dead = true;
+
+            // Die on the client, make sure that the player cannot move anymore
+            player.isControlling = false;
+        }
+    }
+
+    protected override void UpdateServer()
+    {
+        if (!dead && health <= 0)
+        {
+            dead = true;
+
+            // Die on the server
+            StartCoroutine(DieOnServer());
+        }
+    }
+
+    protected IEnumerator DieOnServer ()
+    {
+        // Enable rigid body physics
+        GetComponent<Rigidbody>().isKinematic = false;
+
+        yield return new WaitForSeconds(3);
+
+        // Spawn player again
+        FindObjectOfType<PlayerSpawner>().SpawnPlayer(player.controllingSteamID);
+
+        // Destroy old player
+        Destroy(gameObject);
     }
 
     protected override void OnClientReceivedMessageRaw(byte[] data, ulong steamID)
@@ -33,7 +77,7 @@ public class PlayerHealth : NetworkBehaviour
         if (projectile != null && projectile.playerSteamID != player.controllingSteamID)
         {
             // Take damage
-            health = Mathf.Clamp01(health - 0.1f);
+            health = Mathf.Clamp01(health - 0.05f);
 
             // Send new health to all clients
             SendToAllClients(BitConverter.GetBytes(health), SendType.Reliable);
@@ -53,6 +97,12 @@ public class PlayerHealth : NetworkBehaviour
             GUI.DrawTexture(healthbar, Texture2D.whiteTexture);
             GUI.color = Color.green;
             GUI.DrawTexture(new Rect(healthbar.x, healthbar.y, health * healthbar.width, healthbar.height), Texture2D.whiteTexture);
+        }
+
+        if (!networkObject.onServer && dead)
+        {
+            GUI.color = Color.red;
+            GUI.Label(new Rect(Screen.width / 2, Screen.height / 2, Screen.width / 2, Screen.height / 2), "You are dead");
         }
     }
 }
