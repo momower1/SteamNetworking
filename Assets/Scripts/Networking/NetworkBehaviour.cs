@@ -9,12 +9,13 @@ namespace SteamNetworking
     [RequireComponent(typeof(NetworkObject))]
     public abstract class NetworkBehaviour : MonoBehaviour
     {
+        // The index of this NetworkBehaviour component attached to the network object, set by editor script
+        [ReadOnly]
+        public int index = -1;
+        [SerializeField, ReadOnly]
         protected bool initialized = false;
         protected NetworkObject networkObject;
 
-        // The index of this NetworkBehaviour component attached to the network object, set by editor script
-        [SerializeField, HideInInspector]
-        public int index = -1;
         private HashSet<ulong> clientsReadyForInitialization = new HashSet<ulong>();
 
         protected virtual void Start()
