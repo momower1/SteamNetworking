@@ -4,7 +4,7 @@ using UnityEngine;
 using SteamNetworking;
 using System;
 
-[RequireComponent(typeof(PlayerInput))]
+[RequireComponent(typeof(PlayerMovement))]
 public class Player : NetworkBehaviour
 {
     public ulong controllingSteamID = 0;
@@ -24,7 +24,7 @@ public class Player : NetworkBehaviour
         if (controllingSteamID == Facepunch.Steamworks.Client.Instance.SteamId)
         {
             isControlling = true;
-            GetComponent<PlayerInput>().StartPlayerInputLoop();
+            GetComponent<PlayerMovement>().StartPlayerInputLoop();
         }
     }
 }

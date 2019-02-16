@@ -7,15 +7,19 @@ using SteamNetworking;
 public class PlayerSpawner : MonoBehaviour
 {
     public GameObject playerPrefab;
+    public Transform[] playerSpawnTransforms;
 
     public void SpawnPlayers ()
     {
-        ulong[] memberIDs = Client.Instance.Lobby.GetMemberIDs();
+        ulong[] lobbyMemberIDs = Client.Instance.Lobby.GetMemberIDs();
 
-        foreach (ulong steamID in memberIDs)
+        for (int i = 0; i < lobbyMemberIDs.Length; i++)
         {
-            Player player = GameServer.Instance.InstantiateInScene(playerPrefab, playerPrefab.transform.position, playerPrefab.transform.rotation, null).GetComponent<Player>();
-            player.controllingSteamID = steamID;
+            Vector3 spawnPosition = playerSpawnTransforms[i].position + playerPrefab.transform.position;
+            Quaternion spawnRotation = playerSpawnTransforms[i].rotation * playerPrefab.transform.rotation;
+
+            Player player = GameServer.Instance.InstantiateInScene(playerPrefab, spawnPosition, spawnRotation, null).GetComponent<Player>();
+            player.controllingSteamID = lobbyMemberIDs[i];
         }
     }
 }

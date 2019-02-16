@@ -4,7 +4,7 @@ using UnityEngine;
 using SteamNetworking;
 
 [RequireComponent(typeof(Player))]
-public class PlayerInput : NetworkBehaviour
+public class PlayerMovement : NetworkBehaviour
 {
     [SerializeField]
     protected float inputsPerSec = 60;
@@ -190,6 +190,14 @@ public class PlayerInput : NetworkBehaviour
         playerCamera = Camera.main;
         playerCamera.transform.position = transform.position;
         playerCamera.transform.rotation = transform.rotation;
+
+        // Disable the rendering of the own player
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+
+        foreach(Renderer r in renderers)
+        {
+            r.enabled = false;
+        }
 
         StartCoroutine(PlayerInputLoop());
     }

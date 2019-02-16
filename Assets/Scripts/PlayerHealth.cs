@@ -25,9 +25,9 @@ public class PlayerHealth : NetworkBehaviour
         health = BitConverter.ToSingle(data, 0);
     }
 
-    protected void OnTriggerEnter(Collider other)
+    protected void OnCollisionEnter(Collision collision)
     {
-        Projectile projectile = other.GetComponent<Projectile>();
+        Projectile projectile = collision.gameObject.GetComponent<Projectile>();
 
         // Only take damage if the projectile was shot by another player
         if (projectile != null && projectile.playerSteamID != player.controllingSteamID)
@@ -39,7 +39,7 @@ public class PlayerHealth : NetworkBehaviour
             SendToAllClients(BitConverter.GetBytes(health), SendType.Reliable);
 
             // Destroy projectile
-            Destroy(other.gameObject);
+            Destroy(collision.gameObject.gameObject);
         }
     }
 

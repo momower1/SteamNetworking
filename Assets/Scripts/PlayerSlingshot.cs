@@ -33,7 +33,7 @@ public class PlayerSlingshot : NetworkBehaviour
     protected override void OnServerReceivedMessageRaw(byte[] data, ulong steamID)
     {
         // Spawn projectile
-        GameObject projectile = GameServer.Instance.InstantiateInScene(projectilePrefab, transform.position, transform.rotation, null);
+        GameObject projectile = GameServer.Instance.InstantiateInScene(projectilePrefab, transform.position + transform.forward, transform.rotation, null);
         projectile.GetComponent<Projectile>().playerSteamID = player.controllingSteamID;
     }
 
