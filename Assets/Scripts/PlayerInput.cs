@@ -139,12 +139,12 @@ public class PlayerInput : NetworkBehaviour
             // The values should be the same
             // Log the actual error between the client camera and the server player
             Vector3 positionError = playerTransform.localPosition - lastPlayerTransform.localPosition;
-            Vector3 rotationError = playerTransform.localRotation.eulerAngles - lastPlayerTransform.localRotation.eulerAngles;
+            Quaternion rotationError = Quaternion.Inverse(lastPlayerTransform.localRotation) * playerTransform.localRotation;
             Vector3 scaleError = playerTransform.localScale - lastPlayerTransform.localScale;
 
             // Correct error
             playerCamera.transform.localPosition += positionError;
-            playerCamera.transform.Rotate(rotationError, Space.Self);
+            playerCamera.transform.localRotation *= rotationError;
             playerCamera.transform.localScale += scaleError;
 
             // Any other corrections will be wrong after this one because we already corrected a bit
