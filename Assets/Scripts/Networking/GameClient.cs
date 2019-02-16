@@ -219,18 +219,42 @@ namespace SteamNetworking
         void OnMessageNetworkBehaviour(byte[] data, ulong steamID)
         {
             MessageNetworkBehaviour message = MessageNetworkBehaviour.FromBytes(data, 0);
-            objectsFromServer[message.networkID].HandleNetworkBehaviourMessage(message.index, message.data, steamID);
+
+            if (objectsFromServer.ContainsKey(message.networkID))
+            {
+                objectsFromServer[message.networkID].HandleNetworkBehaviourMessage(message.index, message.data, steamID);
+            }
+            else
+            {
+                Debug.LogWarning(nameof(GameClient) + " does not have " + nameof(NetworkBehaviour) + " " + message.networkID + "[" + message.index + "] and therefore its message cannot be handled!");
+            }
         }
 
         void OnMessageNetworkBehaviourInitialized(byte[] data, ulong steamID)
         {
             MessageNetworkBehaviourInitialized message = ByteSerializer.FromBytes<MessageNetworkBehaviourInitialized>(data);
-            objectsFromServer[message.networkID].HandleNetworkBehaviourInitializedMessage(message.typeID, steamID);
+
+            if (objectsFromServer.ContainsKey(message.networkID))
+            {
+                objectsFromServer[message.networkID].HandleNetworkBehaviourInitializedMessage(message.index, steamID);
+            }
+            else
+            {
+                Debug.LogError(nameof(GameClient) + " does not have " + nameof(NetworkBehaviour) + " " + message.networkID + "[" + message.index + "] and therefore cannot be initialized!");
+            }
         }
 
         public NetworkObject GetObjectFromServer(int networkID)
         {
-            return objectsFromServer[networkID];
+            if (objectsFromServer.ContainsKey(networkID))
+            {
+                return objectsFromServer[networkID];
+            }
+            else
+            {
+                Debug.LogWarning(nameof(GetObjectFromServer) + " returns null because " + nameof(GameClient) + " does not have " + nameof(NetworkObject) + " " + networkID);
+                return null;
+            }
         }
 
         public bool IsInitialized ()

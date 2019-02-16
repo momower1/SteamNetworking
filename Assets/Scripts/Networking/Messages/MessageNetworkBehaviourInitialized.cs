@@ -7,13 +7,13 @@ namespace SteamNetworking.Messages
     public struct MessageNetworkBehaviourInitialized
     {
         public int networkID;                                       // 4 bytes
-        public int typeID;                                          // 4 bytes
+        public int index;                                           // 4 bytes
                                                                     // 8 bytes
 
-        public MessageNetworkBehaviourInitialized(int networkID, int typeID)
+        public MessageNetworkBehaviourInitialized(int networkID, int index)
         {
             this.networkID = networkID;
-            this.typeID = typeID;
+            this.index = index;
         }
     }
 }

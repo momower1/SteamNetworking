@@ -235,7 +235,7 @@ namespace SteamNetworking
         void OnMessageNetworkBehaviourInitialized(byte[] data, ulong steamID)
         {
             MessageNetworkBehaviourInitialized message = ByteSerializer.FromBytes<MessageNetworkBehaviourInitialized>(data);
-            networkObjects[message.networkID].HandleNetworkBehaviourInitializedMessage(message.typeID, steamID);
+            networkObjects[message.networkID].HandleNetworkBehaviourInitializedMessage(message.index, steamID);
         }
 
         void OnDestroy()
