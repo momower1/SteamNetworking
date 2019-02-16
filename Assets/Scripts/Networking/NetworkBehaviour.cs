@@ -24,7 +24,7 @@ namespace SteamNetworking
 
             if (index < 0)
             {
-                Debug.LogError("Index of a NetworkBehaviour attached to\"" + gameObject.name + "\" is not valid!");
+                Debug.LogError("Index of a " + nameof(NetworkBehaviour) + " attached to\"" + gameObject.name + "\" is not valid!");
             }
 
             // NetworkBehaviour messages are managed by the GameClient, GameServer and their NetworkObjects
@@ -202,11 +202,6 @@ namespace SteamNetworking
         }
 
         protected virtual void OnClientReceivedMessage(string message, ulong steamID)
-        {
-            // To be overwritten by the subclass
-        }
-
-        protected virtual void OnTriggerEnter(Collider c)
         {
             // To be overwritten by the subclass
         }
