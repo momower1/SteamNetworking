@@ -34,7 +34,6 @@ namespace SteamNetworking
         public bool removeChildRigidbodies = true;
 
         // Interpolation variables
-        private float interpolationTime = 0;
         private LinkedList<MessageNetworkObject> interpolationMessages = new LinkedList<MessageNetworkObject>();
 
         // Handles all the incoming network behaviour messages from the network behaviours
@@ -77,6 +76,8 @@ namespace SteamNetworking
             if (!onServer && interpolateOnClient)
             {
                 // Find the message that is before and the message after the interpolation time
+                // Use half the server tick rate as a buffer because some messages might not arrive on time
+                float interpolationTime = GameClient.Instance.GetCurrentServerTime() - (1.5f / GameClient.Instance.GetServerHz());
                 LinkedListNode<MessageNetworkObject> interpolationEnd = interpolationMessages.First;
 
                 // Search for the message that is after the interpolation time
@@ -91,7 +92,7 @@ namespace SteamNetworking
                     LinkedListNode<MessageNetworkObject> interpolationStart = interpolationEnd.Previous;
 
                     // Only interpolate if there are two follow up messages
-                    if (interpolationStart != null)// && interpolationEnd.Next != null)
+                    if (interpolationStart != null)
                     {
                         // Found message before the interpolation time, remove all the no longer needed previous entries from the list
                         while (!interpolationMessages.First.Equals(interpolationStart))
@@ -110,14 +111,10 @@ namespace SteamNetworking
                         transform.localPosition = Vector3.Lerp(interpolationStart.Value.localPosition, interpolationEnd.Value.localPosition, interpolationFactor);
                         transform.localRotation = Quaternion.Lerp(interpolationStart.Value.localRotation, interpolationEnd.Value.localRotation, interpolationFactor);
                         transform.localScale = Vector3.Lerp(interpolationStart.Value.localScale, interpolationEnd.Value.localScale, interpolationFactor);
-
-                        interpolationTime += Time.unscaledDeltaTime;
                     }
                     else
                     {
                         // There is no previous message, just take the data from the end without interpolating
-                        interpolationTime = interpolationEnd.Value.time;
-
                         transform.localPosition = interpolationEnd.Value.localPosition;
                         transform.localRotation = interpolationEnd.Value.localRotation;
                         transform.localScale = interpolationEnd.Value.localScale;
