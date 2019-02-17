@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -179,7 +180,7 @@ namespace SteamNetworking
 
         public void SendMessageDestroyNetworkObject(NetworkObject networkObject)
         {
-            byte[] data = System.BitConverter.GetBytes(networkObject.networkID);
+            byte[] data = BitConverter.GetBytes(networkObject.networkID);
             NetworkManager.Instance.SendToAllClients(data, NetworkMessageType.DestroyNetworkObject, SendType.Reliable);
         }
 
@@ -220,9 +221,10 @@ namespace SteamNetworking
 
         void OnMessagePingPong(byte[] data, ulong steamID)
         {
-            // Send the time back but also append the current server hz
+            // Send the time back but also append the current server hz and server time
             ArrayList tmp = new ArrayList(data);
-            tmp.AddRange(System.BitConverter.GetBytes(hz));
+            tmp.AddRange(BitConverter.GetBytes(hz));
+            tmp.AddRange(BitConverter.GetBytes(Time.unscaledTime));
             NetworkManager.Instance.SendToClient(steamID, (byte[])tmp.ToArray(typeof(byte)), NetworkMessageType.PingPong, SendType.Unreliable);
         }
 

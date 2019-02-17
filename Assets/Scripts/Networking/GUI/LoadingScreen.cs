@@ -13,7 +13,7 @@ namespace SteamNetworking.GUI
 
         protected void Update()
         {
-            loadingIcon.Rotate(0, 0, Time.deltaTime * rotationSpeed);
+            loadingIcon.Rotate(0, 0, Time.unscaledDeltaTime * rotationSpeed);
         }
 
         public void Destroy()

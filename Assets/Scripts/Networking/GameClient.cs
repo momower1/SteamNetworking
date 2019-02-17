@@ -12,16 +12,17 @@ namespace SteamNetworking
         public static GameClient Instance = null;
 
         public float pingsPerSec = 1;
-        [ReadOnly]
-        [SerializeField]
+        [SerializeField, ReadOnly]
         private bool initialized = false;
-        [ReadOnly]
-        [SerializeField]
-        private float serverHz = 16;
-        [ReadOnly]
-        [SerializeField]
+        [SerializeField, ReadOnly]
         private float ping = 0;
         private float lastPingTime = 0;
+        [SerializeField, ReadOnly]
+        private float serverHz = 16;
+        [SerializeField, ReadOnly, Tooltip("Always ahead of the " + nameof(currentServerTime))]
+        private float currentClientTime = 0;
+        [SerializeField, ReadOnly, Tooltip("Always after the " + nameof(currentClientTime))]
+        private float currentServerTime = 0;
         [Space(10)]
         public UnityEvent onClientInitialized;
 
@@ -74,12 +75,15 @@ namespace SteamNetworking
 
         void Update()
         {
-            if (Time.time - lastPingTime > (1.0f / pingsPerSec))
+            if (Time.unscaledTime - lastPingTime > (1.0f / pingsPerSec))
             {
-                byte[] data = System.BitConverter.GetBytes(Time.time);
+                byte[] data = System.BitConverter.GetBytes(Time.unscaledTime);
                 NetworkManager.Instance.SendToServer(data, NetworkMessageType.PingPong, SendType.Unreliable);
-                lastPingTime = Time.time;
+                lastPingTime = Time.unscaledTime;
             }
+
+            currentClientTime += Time.unscaledDeltaTime;
+            currentServerTime += Time.unscaledDeltaTime;
         }
 
         IEnumerator SendInitializationMessage ()
@@ -203,26 +207,29 @@ namespace SteamNetworking
         {
             int networkIDToDestroy = System.BitConverter.ToInt32(data, 0);
 
-            if (objectsFromServer.ContainsKey(networkIDToDestroy))
+            if (objectsFromServer.TryGetValue(networkIDToDestroy, out NetworkObject networkObjectToDestroy))
             {
-                Destroy(objectsFromServer[networkIDToDestroy].gameObject);
+                Destroy(networkObjectToDestroy.gameObject);
                 objectsFromServer.Remove(networkIDToDestroy);
             }
         }
 
         void OnMessagePingPong(byte[] data, ulong steamID)
         {
-            ping = Time.time - System.BitConverter.ToSingle(data, 0);
+            // Update ping, server hz, client and server time
+            ping = Time.unscaledTime - System.BitConverter.ToSingle(data, 0);
             serverHz = System.BitConverter.ToSingle(data, 4);
+            currentServerTime = System.BitConverter.ToSingle(data, 8) + ping / 2;
+            currentClientTime = currentServerTime + ping / 2;
         }
 
         void OnMessageNetworkBehaviour(byte[] data, ulong steamID)
         {
             MessageNetworkBehaviour message = MessageNetworkBehaviour.FromBytes(data, 0);
 
-            if (objectsFromServer.ContainsKey(message.networkID))
+            if (objectsFromServer.TryGetValue(message.networkID, out NetworkObject networkObject))
             {
-                objectsFromServer[message.networkID].HandleNetworkBehaviourMessage(message.index, message.data, steamID);
+                networkObject.HandleNetworkBehaviourMessage(message.index, message.data, steamID);
             }
             else
             {
@@ -234,9 +241,9 @@ namespace SteamNetworking
         {
             MessageNetworkBehaviourInitialized message = ByteSerializer.FromBytes<MessageNetworkBehaviourInitialized>(data);
 
-            if (objectsFromServer.ContainsKey(message.networkID))
+            if (objectsFromServer.TryGetValue(message.networkID, out NetworkObject networkObject))
             {
-                objectsFromServer[message.networkID].HandleNetworkBehaviourInitializedMessage(message.index, steamID);
+                networkObject.HandleNetworkBehaviourInitializedMessage(message.index, steamID);
             }
             else
             {
@@ -246,15 +253,13 @@ namespace SteamNetworking
 
         public NetworkObject GetObjectFromServer(int networkID)
         {
-            if (objectsFromServer.ContainsKey(networkID))
+            if (objectsFromServer.TryGetValue(networkID, out NetworkObject networkObject))
             {
-                return objectsFromServer[networkID];
+                return networkObject;
             }
-            else
-            {
-                Debug.LogWarning(nameof(GetObjectFromServer) + " returns null because " + nameof(GameClient) + " does not have " + nameof(NetworkObject) + " " + networkID);
-                return null;
-            }
+
+            Debug.LogWarning(nameof(GetObjectFromServer) + " returns null because " + nameof(GameClient) + " does not have " + nameof(NetworkObject) + " " + networkID);
+            return null;
         }
 
         public bool IsInitialized ()
@@ -262,14 +267,24 @@ namespace SteamNetworking
             return initialized;
         }
 
+        public float GetPing()
+        {
+            return ping;
+        }
+
         public float GetServerHz ()
         {
             return serverHz;
         }
 
-        public float GetPing ()
+        public float GetCurrentClientTime ()
         {
-            return ping;
+            return currentClientTime;
+        }
+
+        public float GetCurrentServerTime ()
+        {
+            return currentServerTime;
         }
 
         void OnDestroy()

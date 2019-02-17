@@ -44,12 +44,12 @@ namespace SteamNetworking
 
             if (Input.GetKeyDown(recordKey))
             {
-                if ((Time.time - lastTimeKeyDown) < 0.5f)
+                if ((Time.unscaledTime - lastTimeKeyDown) < 0.5f)
                 {
                     toggleRecording = !toggleRecording;
                 }
 
-                lastTimeKeyDown = Time.time;
+                lastTimeKeyDown = Time.unscaledTime;
             }
 
             recording = Facepunch.Steamworks.Client.Instance.Voice.IsRecording;
