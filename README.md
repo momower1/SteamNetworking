@@ -1,5 +1,6 @@
 ## Features
 - Steam networking in Unity with a dedicated host using the Facepunch.Steamworks API
+- Lobby scene with scrollable friendslist, invitations, text chat and a ready button
 - Synchronization of transforms (Position, Rotation, Scale, Parent, Instantiate, Destroy)
 - The host runs the server scene and the client scene at the same time, all other players only run the client scene
 - Use one single script to send and handle custom messages between the client and the server
@@ -36,10 +37,11 @@
   - The NetworkBehaviour methods StartServer(), UpdateServer() and OnDestroyServer() are basically Start(), Update(), OnDestroy() methods of the MonoBehaviour when the object is on the server. Otherwise StartClient(), UpdateClient() and OnDestroyClient() will be called. If you want to add e.g. OnCollisionEnter(...) with different behaviour on the server/client you can check the _bool:onServer_ attribute of the NetworkObject in an if-statement.
   - The GameServer and GameClient class have UnityEvents that are triggered when they are initialized. This is basically the same as StartServer() and StartClient() from the NetworkBehaviour. Use this instead of a NetworkBehaviour when you don't have to send messages.
 
-## Issues and possible improvements
+## Known issues and possible improvements
 - The client transform updates could be simulated instantaneous (instead of waiting for the server to do them). Then the clients would need to do the same simulation as the server and store all of its transform updates. These would be compared to the resulting simulation from on the server at a synchronized timestep from the past. The resulting error could be corrected for the present which guarantees that the client has the same transforms as the server. This would result in super smooth movement on the client!
 - Improve host performance by removing all the renderers (and other unnecessary components) from objects in the server scene
-- Loading between different scenes should be implemented with a custom messages
+- Loading between different scenes should be implemented with a custom message
 - Implement a shutdown or reconnect when a player leaves
-- When lagging some network behaviour initialization messages do not arrive
+- Sometimes network behaviour initialization messages do not arrive
+- VoiceChat crackles
 - The lobby scene crashes the first couple times for a lot of people (maybe the fix is to add the app id game "Spacewar" to the steam library)
