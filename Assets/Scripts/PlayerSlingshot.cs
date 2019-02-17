@@ -43,7 +43,7 @@ public class PlayerSlingshot : NetworkBehaviour
         {
             // Crosshair
             GUI.color = Color.green;
-            GUI.DrawTexture(new Rect(Screen.width / 2, Screen.height / 2, Screen.height / 100, Screen.height / 100), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(Screen.width / 2, Screen.height / 2, Screen.height / 200, Screen.height / 200), Texture2D.whiteTexture);
         }
     }
 }

@@ -12,6 +12,7 @@ public class PlayerMovement : NetworkBehaviour
     protected float mouseSensitivity = 1;
     [SerializeField]
     protected float movementSpeed = 10;
+    protected Vector3 desync;
 
     protected Player player;
     protected Camera playerCamera;
@@ -159,6 +160,11 @@ public class PlayerMovement : NetworkBehaviour
             Quaternion rotationError = Quaternion.Inverse(playerTransformMatch.localRotation) * playerTransform.localRotation;
             Vector3 scaleError = playerTransform.localScale - playerTransformMatch.localScale;
 
+            // Save the desync in order to display it
+            desync.x = positionError.magnitude;
+            desync.y = Quaternion.Angle(playerTransformMatch.localRotation, playerTransform.localRotation);
+            desync.z = scaleError.magnitude;
+
             // Correct error from the past in the present as an offset
             playerCamera.transform.localPosition += positionError;
             playerCamera.transform.localRotation *= rotationError;
@@ -217,5 +223,15 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         StartCoroutine(PlayerInputLoop());
+    }
+
+    protected void OnGUI()
+    {
+        if (player.isControlling)
+        {
+            GUI.color = Color.black;
+            string label = "Position:\t" + desync.x.ToString("0.0000") + "\nRotation:\t" + desync.y.ToString("0.0000") + "\nScale:\t" + desync.z.ToString("0.0000");
+            GUI.Label(new Rect(Screen.width - Screen.width / 5, Screen.height - Screen.height / 5, Screen.width / 5, Screen.height / 5), "Desync\n" + label);
+        }
     }
 }
