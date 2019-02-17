@@ -11,7 +11,7 @@ namespace SteamNetworking
     {
         public static GameClient Instance = null;
 
-        public float pingsPerSec = 1;
+        public float pingsPerSec = 16;
         [SerializeField, ReadOnly]
         private bool initialized = false;
         [SerializeField, ReadOnly]

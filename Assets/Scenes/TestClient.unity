@@ -224,10 +224,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5219ac619b366eb4b9fd23cca4d97de8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pingsPerSec: 1
+  pingsPerSec: 16
   initialized: 0
-  serverHz: 16
   ping: 0
+  serverHz: 16
+  currentClientTime: 0
+  currentServerTime: 0
   onClientInitialized:
     m_PersistentCalls:
       m_Calls:
