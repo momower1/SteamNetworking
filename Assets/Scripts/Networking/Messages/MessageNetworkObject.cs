@@ -40,7 +40,7 @@ namespace SteamNetworking.Messages
             }
 
             // Set and save the last update time of the network object
-            time = networkObject.lastUpdate = Time.time;
+            time = networkObject.lastUpdate = Time.unscaledTime;
             name = networkObject.name;
             resourceID = networkObject.resourceID;
             instanceID = networkObject.transform.GetInstanceID();

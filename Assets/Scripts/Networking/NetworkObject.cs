@@ -111,7 +111,7 @@ namespace SteamNetworking
                         transform.localRotation = Quaternion.Lerp(interpolationStart.Value.localRotation, interpolationEnd.Value.localRotation, interpolationFactor);
                         transform.localScale = Vector3.Lerp(interpolationStart.Value.localScale, interpolationEnd.Value.localScale, interpolationFactor);
 
-                        interpolationTime += Time.deltaTime;
+                        interpolationTime += Time.unscaledDeltaTime;
                     }
                     else
                     {
