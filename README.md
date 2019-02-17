@@ -37,7 +37,9 @@
   - The GameServer and GameClient class have UnityEvents that are triggered when they are initialized. This is basically the same as StartServer() and StartClient() from the NetworkBehaviour. Use this instead of a NetworkBehaviour when you don't have to send messages.
 
 ## Issues and possible improvements
-- Improve host performance by remove all the renderers (and other unnecessary components) from objects in the server scene
+- The client transform updates could be simulated instantaneous (instead of waiting for the server to do them). Then the clients would need to do the same simulation as the server and store all of its transform updates. These would be compared to the resulting simulation from on the server at a synchronized timestep from the past. The resulting error could be corrected for the present which guarantees that the client has the same transforms as the server. This would result in super smooth movement on the client!
+- Improve host performance by removing all the renderers (and other unnecessary components) from objects in the server scene
 - Loading between different scenes should be implemented with a custom messages
-- If the server leaves the game, everything crashes
-- The lobby scene crashes for a lot of people (maybe the fix is to add the app id game "Spacewar" to the steam library)
+- Implement a shutdown or reconnect when a player leaves
+- When lagging some network behaviour initialization messages do not arrive
+- The lobby scene crashes the first couple times for a lot of people (maybe the fix is to add the app id game "Spacewar" to the steam library)
