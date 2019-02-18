@@ -38,7 +38,6 @@
   - The GameServer and GameClient class have UnityEvents that are triggered when they are initialized. This is basically the same as StartServer() and StartClient() from the NetworkBehaviour. Use this instead of a NetworkBehaviour when you don't have to send messages.
 
 ## Known issues and possible improvements
-- The client transform updates could be simulated instantaneous (instead of waiting for the server to do them). Then the clients would need to do the same simulation as the server and store all of its transform updates. These would be compared to the resulting simulation from on the server at a synchronized timestep from the past. The resulting error could be corrected for the present which guarantees that the client has the same transforms as the server. This would result in super smooth movement on the client!
 - Improve host performance by removing all the renderers (and other unnecessary components) from objects in the server scene
 - Loading between different scenes should be implemented with a custom message
 - Implement a shutdown or reconnect when a player leaves
