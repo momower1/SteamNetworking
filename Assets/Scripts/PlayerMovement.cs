@@ -18,11 +18,11 @@ public class PlayerMovement : NetworkBehaviour
     protected Camera playerCamera;
     protected int playerTransformID = 0;
     protected PlayerInputMessage playerInputMessage;
-    protected LinkedList<PlayerTransform> lastPlayerTransforms;
+    protected Dictionary<int, PlayerTransform> lastPlayerTransforms;
 
     protected struct PlayerInputMessage
     {
-        public float time;
+        public int id;
         public float mouseX;
         public float mouseY;
         public float w;
@@ -30,9 +30,9 @@ public class PlayerMovement : NetworkBehaviour
         public float s;
         public float d;
 
-        public PlayerInputMessage (float time, float mouseX, float mouseY, float w, float a, float s, float d)
+        public PlayerInputMessage (int id, float mouseX, float mouseY, float w, float a, float s, float d)
         {
-            this.time = time;
+            this.id = id;
             this.mouseX = mouseX;
             this.mouseY = mouseY;
             this.w = w;
@@ -44,7 +44,7 @@ public class PlayerMovement : NetworkBehaviour
 
     protected struct PlayerTransform
     {
-        public float time;
+        public int id;
         public Vector3 localPosition;
         public Quaternion localRotation;
         public Vector3 localScale;
@@ -55,7 +55,7 @@ public class PlayerMovement : NetworkBehaviour
         base.Start();
 
         player = GetComponent<Player>();
-        lastPlayerTransforms = new LinkedList<PlayerTransform>();
+        lastPlayerTransforms = new Dictionary<int, PlayerTransform>();
     }
 
     protected override void UpdateClient()
@@ -92,12 +92,12 @@ public class PlayerMovement : NetworkBehaviour
 
             // Save the last local player transform in order to compare it to the servers later
             PlayerTransform playerTransform = new PlayerTransform();
-            playerTransform.time = GameClient.Instance.GetCurrentClientTime();
+            playerTransform.id = playerTransformID;
             playerTransform.localPosition = playerCamera.transform.localPosition;
             playerTransform.localRotation = playerCamera.transform.localRotation;
             playerTransform.localScale = playerCamera.transform.localScale;
 
-            lastPlayerTransforms.AddLast(playerTransform);
+            lastPlayerTransforms[playerTransformID] = playerTransform;
 
             // Reset accumulated input
             playerTransformID++;
@@ -118,9 +118,9 @@ public class PlayerMovement : NetworkBehaviour
         // Do the same movement as the client already did
         SimulateMovement(transform, m.mouseX, m.mouseY, m.w, m.a, m.s, m.d);
 
-        // Send the result with the current server time back to the client in order to compare and correct it
+        // Send the result with the same id back to the client in order to compare and correct it
         PlayerTransform playerTransform = new PlayerTransform();
-        playerTransform.time = Time.unscaledTime;
+        playerTransform.id = m.id;
         playerTransform.localPosition = transform.localPosition;
         playerTransform.localRotation = transform.localRotation;
         playerTransform.localScale = transform.localScale;
@@ -133,29 +133,10 @@ public class PlayerMovement : NetworkBehaviour
         // Get the result of the server simulation
         PlayerTransform playerTransform = ByteSerializer.FromBytes<PlayerTransform>(data);
 
-        // This variable influences the roughness of the correction
-        float minTimeDifference = 0.005f;
-        bool foundPlayerTransformMatch = false;
-        PlayerTransform playerTransformMatch = new PlayerTransform();
-
-        // Find the best matching player transform from the past
-        // This could be optimized since the lastPlayerTransforms are sorted by time (e.g. binary search)
-        foreach (PlayerTransform t in lastPlayerTransforms)
+        // Find the matching player transform from the past, calculate the error and correct it
+        if (lastPlayerTransforms.TryGetValue(playerTransform.id, out PlayerTransform playerTransformMatch))
         {
-            float timeDifference = Mathf.Abs(t.time - playerTransform.time);
-
-            if (timeDifference < minTimeDifference)
-            {
-                minTimeDifference = timeDifference;
-                foundPlayerTransformMatch = true;
-                playerTransformMatch = t;
-            }
-        }
-
-        // Calculate the error
-        if (foundPlayerTransformMatch)
-        {
-            // The values should be the same if the ping, client and server times add up perfectly (which they don't do)
+            // The values should be the same if the ping, client and server times would add up perfectly and would be deterministic
             Vector3 positionError = playerTransform.localPosition - playerTransformMatch.localPosition;
             Quaternion rotationError = Quaternion.Inverse(playerTransformMatch.localRotation) * playerTransform.localRotation;
             Vector3 scaleError = playerTransform.localScale - playerTransformMatch.localScale;
