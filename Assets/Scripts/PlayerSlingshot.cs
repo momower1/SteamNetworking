@@ -10,12 +10,14 @@ public class PlayerSlingshot : NetworkBehaviour
     protected GameObject projectilePrefab;
 
     protected Player player;
+    protected PlayerMovement playerMovement;
 
     protected override void Start()
     {
         base.Start();
 
         player = GetComponent<Player>();
+        playerMovement = GetComponent<PlayerMovement>();
     }
 
     protected override void UpdateClient()
@@ -32,7 +34,14 @@ public class PlayerSlingshot : NetworkBehaviour
 
     protected override void OnServerReceivedMessageRaw(byte[] data, ulong steamID)
     {
-        // Spawn projectile
+        StartCoroutine(SpawnProjectileDelayed());
+    }
+
+    protected IEnumerator SpawnProjectileDelayed ()
+    {
+        // Wait until the player is at the position that the client was at when the button was pressed
+        yield return new WaitForSecondsRealtime(1.0f / playerMovement.inputsPerSec);
+
         GameObject projectile = GameServer.Instance.InstantiateInScene(projectilePrefab, transform.position + transform.forward, transform.rotation, null);
         projectile.GetComponent<Projectile>().playerSteamID = player.controllingSteamID;
     }

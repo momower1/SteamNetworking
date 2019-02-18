@@ -6,15 +6,12 @@ using SteamNetworking;
 [RequireComponent(typeof(Player))]
 public class PlayerMovement : NetworkBehaviour
 {
-    [SerializeField]
-    protected float inputsPerSec = 60;
-    [SerializeField]
-    protected float mouseSensitivity = 1;
-    [SerializeField]
-    protected float movementSpeed = 10;
-    protected Vector3 desync;
+    public float inputsPerSec = 60;
+    public float mouseSensitivity = 1;
+    public float movementSpeed = 10;
 
     protected Player player;
+    protected Vector3 desync;
     protected Camera playerCamera;
     protected int playerTransformID = 0;
     protected PlayerInputMessage playerInputMessage;
