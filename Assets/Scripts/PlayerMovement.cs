@@ -174,11 +174,16 @@ public class PlayerMovement : NetworkBehaviour
         target.rotation = Quaternion.Euler(toRotation);
 
         // Move
-        float movementX = d - a;
-        float movementZ = w - s;
+        float movementRight = d - a;
+        float movementForward = w - s;
 
-        target.position += movementX * movementSpeed * new Vector3(target.right.x, 0, target.right.z).normalized;
-        target.position += movementZ * movementSpeed * new Vector3(target.forward.x, 0, target.forward.z).normalized;
+        Vector3 right = new Vector3(target.right.x, 0, target.right.z).normalized;
+        Vector3 forward = new Vector3(target.forward.x, 0, target.forward.z).normalized;
+        Vector3 movementDirection = (movementRight * right + movementForward * forward).normalized;
+
+        // Make sure that pressing e.g. W and D does not move the player faster than when only pressing W
+        target.position += movementSpeed * movementRight * Mathf.Abs(Vector3.Dot(right, movementDirection)) * right;
+        target.position += movementSpeed * movementForward * Mathf.Abs(Vector3.Dot(forward, movementDirection)) * forward;
     }
 
     public void StartPlayerInputLoop ()
