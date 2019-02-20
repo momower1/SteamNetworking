@@ -185,11 +185,11 @@ public class PlayerMovement : NetworkBehaviour
         Vector3 movement = movementSpeed * movementRight * Mathf.Abs(Vector3.Dot(right, movementDirection)) * right;
         movement += movementSpeed * movementForward * Mathf.Abs(Vector3.Dot(forward, movementDirection)) * forward;
 
-        // Do deterministic collision detection by raycasting where the player would move and only moving as far as there is no penetration
-        if (Physics.Raycast(target.position, movementDirection, out RaycastHit raycastHit, 1.0f + movement.magnitude, ~LayerMask.NameToLayer("Player")))
+        // Do deterministic collision detection by casting where the player would move and only moving as far as there is no penetration
+        if (Physics.SphereCast(target.position, 0.5f, movementDirection, out RaycastHit raycastHit, movement.magnitude, ~LayerMask.NameToLayer("Player")))
         {
-            movement = Mathf.Max(0, raycastHit.distance - 1) * movement.normalized;
             Debug.DrawLine(target.position, target.position + (1 + movement.magnitude) * movementDirection, Color.red, Time.deltaTime);
+            movement = Mathf.Max(0, raycastHit.distance - 0.1f) * movement.normalized;
         }
 
         // Move based on the collision result
