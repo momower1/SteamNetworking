@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 6420284570621719911}
   - component: {fileID: 4861347266938646981}
   - component: {fileID: 8398722983038900281}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -57,10 +57,10 @@ MonoBehaviour:
   lastUpdate: 0
   root: {fileID: 2824742043163928072}
   children: []
-  serverLayer: Server
-  clientLayer: Client
+  serverLayer: Player
+  clientLayer: Player
   interpolateOnClient: 1
-  removeChildColliders: 1
+  removeChildColliders: 0
   removeChildRigidbodies: 1
 --- !u!114 &2824742043163928073
 MonoBehaviour:
@@ -78,6 +78,7 @@ MonoBehaviour:
   initialized: 0
   controllingSteamID: 0
   isControlling: 0
+  isDead: 0
 --- !u!114 &5607449339991283906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,7 +168,7 @@ GameObject:
   - component: {fileID: 4339305491147753060}
   - component: {fileID: 857680430036378961}
   - component: {fileID: 7900346153245143425}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -244,7 +245,7 @@ GameObject:
   - component: {fileID: 8971848320764615579}
   - component: {fileID: 7665018945258873642}
   - component: {fileID: 1050381711774765156}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}

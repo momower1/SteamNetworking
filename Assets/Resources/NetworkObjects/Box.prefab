@@ -130,5 +130,5 @@ MonoBehaviour:
   serverLayer: Server
   clientLayer: Client
   interpolateOnClient: 1
-  removeChildColliders: 1
+  removeChildColliders: 0
   removeChildRigidbodies: 1

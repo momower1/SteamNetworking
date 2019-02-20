@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6817609668511300048}
   - component: {fileID: 114508878345409366}
   m_Layer: 9
-  m_Name: _TestPlane
+  m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -107,13 +107,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceID: 6
   onServer: 1
-  serverID: 0
+  networkID: 0
   lastUpdate: 0
   root: {fileID: 114508878345409366}
   children: []
   serverLayer: Server
-  removeServerChildColliders: 0
   clientLayer: Client
   interpolateOnClient: 1
-  removeChildColliders: 1
+  removeChildColliders: 0
   removeChildRigidbodies: 1
