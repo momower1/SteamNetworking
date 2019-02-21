@@ -100,7 +100,7 @@ public class PlayerMovement : NetworkBehaviour
             playerTransformID++;
             playerInputMessage = new PlayerInputMessage(playerTransformID, 0, 0, 0, 0, 0, 0);
 
-            yield return new WaitForSeconds(1.0f / inputsPerSec);
+            yield return new WaitForSecondsRealtime(1.0f / inputsPerSec);
         }
     }
 
@@ -185,8 +185,18 @@ public class PlayerMovement : NetworkBehaviour
         Vector3 movement = movementSpeed * movementRight * Mathf.Abs(Vector3.Dot(right, movementDirection)) * right;
         movement += movementSpeed * movementForward * Mathf.Abs(Vector3.Dot(forward, movementDirection)) * forward;
 
+        RaycastHit raycastHit;
+        const float maxStepSize = 1.0f;
+        int everythingButPlayerMask = ~(1 << player.gameObject.layer);
+
+        // Raycast the floor to set the y-position correctly
+        if (Physics.Raycast(target.position + movement + (1.5f - maxStepSize) * Vector3.down, Vector3.down, out raycastHit, 2 * maxStepSize, everythingButPlayerMask))
+        {
+            movement += raycastHit.point - (target.position + movement + 1.5f * Vector3.down);
+        }
+
         // Do deterministic collision detection by casting where the player would move and only moving as far as there is no penetration
-        if (Physics.SphereCast(target.position, 0.5f, movementDirection, out RaycastHit raycastHit, movement.magnitude, ~LayerMask.NameToLayer("Player")))
+        if (Physics.SphereCast(target.position, 0.5f, movementDirection, out raycastHit, movement.magnitude, everythingButPlayerMask))
         {
             Debug.DrawLine(target.position, target.position + (1 + movement.magnitude) * movementDirection, Color.red, Time.deltaTime);
             movement = Mathf.Max(0, raycastHit.distance - 0.1f) * movement.normalized;

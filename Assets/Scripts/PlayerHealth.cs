@@ -64,7 +64,7 @@ public class PlayerHealth : NetworkBehaviour
         // Enable rigid body physics
         GetComponent<Rigidbody>().isKinematic = false;
 
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSecondsRealtime(3);
 
         // Spawn player again
         FindObjectOfType<PlayerSpawner>().SpawnPlayer(player.controllingSteamID);
