@@ -189,21 +189,21 @@ public class PlayerMovement : NetworkBehaviour
         const float maxStepSize = 1.0f;
         int everythingButPlayerMask = ~(1 << player.gameObject.layer);
 
-        // Raycast the floor to set the y-position correctly
+        // Raycast the floor to set the y-position correctly, only move player if there is a floor
         if (Physics.Raycast(target.position + movement + (1.5f - maxStepSize) * Vector3.down, Vector3.down, out raycastHit, 2 * maxStepSize, everythingButPlayerMask))
         {
             movement += raycastHit.point - (target.position + movement + 1.5f * Vector3.down);
-        }
 
-        // Do deterministic collision detection by casting where the player would move and only moving as far as there is no penetration
-        if (Physics.SphereCast(target.position, 0.5f, movementDirection, out raycastHit, movement.magnitude, everythingButPlayerMask))
-        {
-            Debug.DrawLine(target.position, target.position + (1 + movement.magnitude) * movementDirection, Color.red, Time.deltaTime);
-            movement = Mathf.Max(0, raycastHit.distance - 0.1f) * movement.normalized;
-        }
+            // Do deterministic collision detection by casting where the player would move and only moving as far as there is no penetration
+            if (Physics.SphereCast(target.position, 0.5f, movementDirection, out raycastHit, movement.magnitude, everythingButPlayerMask))
+            {
+                Debug.DrawLine(target.position, target.position + (1 + movement.magnitude) * movementDirection, Color.red, Time.deltaTime);
+                movement = Mathf.Max(0, raycastHit.distance - 0.1f) * movement.normalized;
+            }
 
-        // Move based on the collision result
-        target.position += movement;
+            // Move based on the collision result
+            target.position += movement;
+        }
     }
 
     public void StartPlayerInputLoop ()
