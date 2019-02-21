@@ -62,7 +62,7 @@ namespace SteamNetworking.Test
                 MessageMove message = new MessageMove(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), false);
                 SendToServer(ByteSerializer.GetBytes(message), SendType.Unreliable);
 
-                yield return new WaitForSeconds(1.0f / inputsPerSec);
+                yield return new WaitForSecondsRealtime(1.0f / inputsPerSec);
             }
         }
 
