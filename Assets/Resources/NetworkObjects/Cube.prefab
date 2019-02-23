@@ -113,8 +113,12 @@ MonoBehaviour:
   lastUpdate: 0
   root: {fileID: 114340251316627260}
   children: []
-  serverLayer: Server
-  clientLayer: Client
+  serverLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  clientLayer:
+    serializedVersion: 2
+    m_Bits: 1024
   interpolateOnClient: 1
   removeChildColliders: 1
   removeChildRigidbodies: 1
@@ -131,6 +135,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   index: 0
+  initialized: 0
   inputsPerSec: 10
   movementSpeed: 150
   jumpHeight: 50
@@ -147,6 +152,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   index: 1
+  initialized: 0
 --- !u!54 &718655015
 Rigidbody:
   m_ObjectHideFlags: 0
