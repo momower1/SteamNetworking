@@ -10,7 +10,7 @@
 - Steam has to be running in the background for the networking to work
 - The server scene needs a GameServer object and the client scene a GameClient object
 - Server scene should do everything (movement, physics, ...), the client scene just automatically spawns all the objects and sends player input to the server
-- All objects in the client scene have to be on the layer _Client_ and all objects in the server scene have to be on the layer _Server_
+- Usually all objects in the client scene have to be on the layer _Client/Default_ and all objects in the server scene have to be on the layer _Server/Default_
 - Display1 shows the game from the client camera, Display2 shows the game from the server camera and the SceneView shows both perspectives
 - You have to load the lobby scene first in order to initialize the networking and click ready to load the server and client scene. You can change the _LobbyManager_ attributes _string:serverSceneName_ and _string:clientSceneName_ to load your own scenes for testing purposes
 
