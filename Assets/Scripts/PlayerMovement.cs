@@ -130,6 +130,11 @@ public class PlayerMovement : NetworkBehaviour
             lastPlayerInputs.RemoveFirst();
         }
 
+        // Save current transform in oder to display the desync later
+        Vector3 positionBeforeCorrection = playerCamera.transform.localPosition;
+        Quaternion rotationBeforeCorrection = playerCamera.transform.localRotation;
+        Vector3 scaleBeforeCorrection = playerCamera.transform.localScale;
+
         // Reset transform to the one from the server
         playerCamera.transform.localPosition = playerTransform.localPosition;
         playerCamera.transform.localRotation = playerTransform.localRotation;
@@ -142,6 +147,11 @@ public class PlayerMovement : NetworkBehaviour
         }
 
         SimulateMovement(playerCamera.transform, playerInputMessage.mouseX, playerInputMessage.mouseY, playerInputMessage.w, playerInputMessage.a, playerInputMessage.s, playerInputMessage.d);
+
+        // Compute the desync in order to display it
+        desync.x = Vector3.Distance(playerCamera.transform.localPosition, positionBeforeCorrection);
+        desync.y = Quaternion.Angle(playerCamera.transform.localRotation, rotationBeforeCorrection);
+        desync.z = Vector3.Distance(playerCamera.transform.localScale, scaleBeforeCorrection);
     }
 
     protected void SimulateMovement (Transform target, float mouseX, float mouseY, float w, float a, float s, float d)
