@@ -15,7 +15,7 @@ public class PlayerMovement : NetworkBehaviour
     protected Camera playerCamera;
     protected int playerTransformID = 0;
     protected PlayerInputMessage playerInputMessage;
-    protected Dictionary<int, PlayerTransform> lastPlayerTransforms;
+    protected LinkedList<PlayerInputMessage> lastPlayerInputs;
 
     protected struct PlayerInputMessage
     {
@@ -52,7 +52,7 @@ public class PlayerMovement : NetworkBehaviour
         base.Start();
 
         player = GetComponent<Player>();
-        lastPlayerTransforms = new Dictionary<int, PlayerTransform>();
+        lastPlayerInputs = new LinkedList<PlayerInputMessage>();
     }
 
     protected override void UpdateClient()
@@ -87,14 +87,8 @@ public class PlayerMovement : NetworkBehaviour
         {
             SendToServer(ByteSerializer.GetBytes(playerInputMessage), SendType.Unreliable);
 
-            // Save the last local player transform in order to compare it to the servers later
-            PlayerTransform playerTransform = new PlayerTransform();
-            playerTransform.id = playerTransformID;
-            playerTransform.localPosition = playerCamera.transform.localPosition;
-            playerTransform.localRotation = playerCamera.transform.localRotation;
-            playerTransform.localScale = playerCamera.transform.localScale;
-
-            lastPlayerTransforms[playerTransformID] = playerTransform;
+            // Save input in order to replay it later
+            lastPlayerInputs.AddLast(playerInputMessage);
 
             // Reset accumulated input
             playerTransformID++;
@@ -115,7 +109,7 @@ public class PlayerMovement : NetworkBehaviour
         // Do the same movement as the client already did
         SimulateMovement(transform, m.mouseX, m.mouseY, m.w, m.a, m.s, m.d);
 
-        // Send the result with the same id back to the client in order to compare and correct it
+        // Send the result with the same id back to the client in order to replay the input from there
         PlayerTransform playerTransform = new PlayerTransform();
         playerTransform.id = m.id;
         playerTransform.localPosition = transform.localPosition;
@@ -130,27 +124,24 @@ public class PlayerMovement : NetworkBehaviour
         // Get the result of the server simulation
         PlayerTransform playerTransform = ByteSerializer.FromBytes<PlayerTransform>(data);
 
-        // Find the matching player transform from the past, calculate the error and correct it
-        if (lastPlayerTransforms.TryGetValue(playerTransform.id, out PlayerTransform playerTransformMatch))
+        // Remove all the inputs that are no longer needed
+        while (lastPlayerInputs.First != null && lastPlayerInputs.First.Value.id <= playerTransform.id)
         {
-            // The values should be the same if the ping, client and server times would add up perfectly and would be deterministic
-            Vector3 positionError = playerTransform.localPosition - playerTransformMatch.localPosition;
-            Quaternion rotationError = Quaternion.Inverse(playerTransformMatch.localRotation) * playerTransform.localRotation;
-            Vector3 scaleError = playerTransform.localScale - playerTransformMatch.localScale;
-
-            // Save the desync in order to display it
-            desync.x = positionError.magnitude;
-            desync.y = Quaternion.Angle(playerTransformMatch.localRotation, playerTransform.localRotation);
-            desync.z = scaleError.magnitude;
-
-            // Correct error from the past in the present as an offset
-            playerCamera.transform.localPosition += positionError;
-            playerCamera.transform.localRotation *= rotationError;
-            playerCamera.transform.localScale += scaleError;
-
-            // Any other corrections will be wrong after this one because we already corrected a bit
-            lastPlayerTransforms.Clear();
+            lastPlayerInputs.RemoveFirst();
         }
+
+        // Reset transform to the one from the server
+        playerCamera.transform.localPosition = playerTransform.localPosition;
+        playerCamera.transform.localRotation = playerTransform.localRotation;
+        playerCamera.transform.localScale = playerTransform.localScale;
+
+        // Resimulate all the inputs since that state
+        foreach (PlayerInputMessage input in lastPlayerInputs)
+        {
+            SimulateMovement(playerCamera.transform, input.mouseX, input.mouseY, input.w, input.a, input.s, input.d);
+        }
+
+        SimulateMovement(playerCamera.transform, playerInputMessage.mouseX, playerInputMessage.mouseY, playerInputMessage.w, playerInputMessage.a, playerInputMessage.s, playerInputMessage.d);
     }
 
     protected void SimulateMovement (Transform target, float mouseX, float mouseY, float w, float a, float s, float d)
