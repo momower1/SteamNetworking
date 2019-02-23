@@ -17,8 +17,8 @@ TagManager:
   - PostProcessing
   - Server/Default
   - Client/Default
-  - Player
-  - 
+  - Server/Player
+  - Client/Player
   - 
   - 
   - 

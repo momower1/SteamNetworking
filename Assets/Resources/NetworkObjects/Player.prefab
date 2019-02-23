@@ -57,8 +57,12 @@ MonoBehaviour:
   lastUpdate: 0
   root: {fileID: 2824742043163928072}
   children: []
-  serverLayer: Player
-  clientLayer: Player
+  serverLayer:
+    serializedVersion: 2
+    m_Bits: 2048
+  clientLayer:
+    serializedVersion: 2
+    m_Bits: 4096
   interpolateOnClient: 1
   removeChildColliders: 0
   removeChildRigidbodies: 1
@@ -108,7 +112,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   index: 2
   initialized: 0
-  body: {fileID: 8971848320764615579}
   inputsPerSec: 60
   mouseSensitivity: 1
   movementSpeed: 10
