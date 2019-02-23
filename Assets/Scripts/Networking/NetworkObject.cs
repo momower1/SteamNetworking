@@ -25,10 +25,10 @@ namespace SteamNetworking
         public NetworkObject[] children = null;
 
         [Header("Server Parameters")]
-        public string serverLayer = "Server";
+        public LayerMask serverLayer = 1 << 9;
 
         [Header("Client Parameters")]
-        public string clientLayer = "Client";
+        public LayerMask clientLayer = 1 << 10;
         public bool interpolateOnClient = true;
         public bool removeChildColliders = true;
         public bool removeChildRigidbodies = true;
@@ -198,9 +198,23 @@ namespace SteamNetworking
             networkBehaviourInitializedEvents.Remove(index);
         }
 
-        public void SetLayerOfThisGameObjectAndAllChildren (string layer)
+        public void SetLayerOfThisGameObjectAndAllChildren (LayerMask layerMask)
         {
-            int layerToSet = LayerMask.NameToLayer(layer);
+            int layerToSet = -1;
+
+            for (int i = 0; i < 32; i++)
+            {
+                if (layerMask.value == (1 << i))
+                {
+                    layerToSet = i;
+                }
+            }
+
+            if (layerToSet == -1)
+            {
+                Debug.LogError(nameof(NetworkObject) + " " + gameObject.name + " cannot have none or multiple layers set in its layer mask!");
+                return;
+            }
 
             // Also contains the own transform
             Transform[] thisAndAllChildren = GetComponentsInChildren<Transform>(true);
