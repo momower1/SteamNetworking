@@ -188,7 +188,7 @@ public class PlayerMovement : NetworkBehaviour
 
         RaycastHit raycastHit;
         const float maxStepSize = 1.0f;
-        int collisionLayerMask = networkObject.onServer ? LayerMask.GetMask("Server/Default") : LayerMask.GetMask("Client/Default");
+        int collisionLayerMask = networkObject.onServer ? LayerMask.GetMask("Server/Default", "Server/Player") : LayerMask.GetMask("Client/Default");
 
         // Raycast the floor to set the y-position correctly, only move player if there is a floor
         if (Physics.Raycast(target.position + movement + (1.5f - maxStepSize) * Vector3.down, Vector3.down, out raycastHit, 2 * maxStepSize, collisionLayerMask))
