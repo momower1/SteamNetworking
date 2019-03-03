@@ -57,7 +57,7 @@ public class PlayerMovement : NetworkBehaviour
 
     protected override void UpdateClient()
     {
-        if (player.isControlling && !player.isDead)
+        if (player.isControlling && !player.isDead && !player.isShooting)
         {
             // Get input
             float dt = Time.deltaTime;
@@ -85,14 +85,17 @@ public class PlayerMovement : NetworkBehaviour
     {
         while (player.isControlling && !player.isDead)
         {
-            SendToServer(ByteSerializer.GetBytes(playerInputMessage), SendType.Unreliable);
+            if (!player.isShooting)
+            {
+                SendToServer(ByteSerializer.GetBytes(playerInputMessage), SendType.Unreliable);
 
-            // Save input in order to replay it later
-            lastPlayerInputs.AddLast(playerInputMessage);
+                // Save input in order to replay it later
+                lastPlayerInputs.AddLast(playerInputMessage);
 
-            // Reset accumulated input
-            playerTransformID++;
-            playerInputMessage = new PlayerInputMessage(playerTransformID, 0, 0, 0, 0, 0, 0);
+                // Reset accumulated input
+                playerTransformID++;
+                playerInputMessage = new PlayerInputMessage(playerTransformID, 0, 0, 0, 0, 0, 0);
+            }
 
             yield return new WaitForSecondsRealtime(1.0f / inputsPerSec);
         }

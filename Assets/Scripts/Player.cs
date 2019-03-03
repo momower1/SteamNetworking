@@ -9,6 +9,7 @@ public class Player : NetworkBehaviour
 {
     public ulong controllingSteamID = 0;
     public bool isControlling = false;
+    public bool isShooting = false;
     public bool isDead = false;
 
     protected override void StartServer()
