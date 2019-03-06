@@ -6,8 +6,8 @@ using System;
 
 public class Projectile : NetworkBehaviour
 {
-    // The steam id of the player that shot this projectile
-    public ulong playerSteamID;
+    // The id of the player that shot this projectile
+    public int playerNetworkID;
     [SerializeField]
     protected float speed = 10;
     [SerializeField]
@@ -15,22 +15,21 @@ public class Projectile : NetworkBehaviour
     [SerializeField]
     protected LineRenderer lineRenderer;
 
+    private Player player;
+
     private struct ProjectileMessage
     {
-        public ulong playerSteamID;
+        public int playerNetworkID;
         public bool deflect;
         public Vector3 deflectPosition;
 
-        public ProjectileMessage (ulong playerSteamID, bool deflect, Vector3 deflectPosition)
+        public ProjectileMessage (int playerNetworkID, bool deflect, Vector3 deflectPosition)
         {
-            this.playerSteamID = playerSteamID;
+            this.playerNetworkID = playerNetworkID;
             this.deflect = deflect;
             this.deflectPosition = deflectPosition;
         }
     }
-
-    private PlayerProjectile playerProjectile;
-    private bool finished = false;
 
     protected override void Start()
     {
@@ -41,8 +40,10 @@ public class Projectile : NetworkBehaviour
 
     protected override void StartServer()
     {
-        ProjectileMessage projectileMessage = new ProjectileMessage(playerSteamID, false, Vector3.zero);
+        ProjectileMessage projectileMessage = new ProjectileMessage(playerNetworkID, false, Vector3.zero);
         SendToAllClients(ByteSerializer.GetBytes(projectileMessage), SendType.Reliable);
+
+        player = GameServer.Instance.GetNetworkObject(playerNetworkID).GetComponent<Player>();
     }
 
     protected override void Update()
@@ -52,26 +53,68 @@ public class Projectile : NetworkBehaviour
         lineRenderer.SetPosition(lineRenderer.positionCount - 1, transform.position);
     }
 
+    protected override void UpdateClient()
+    {
+        if (player != null && player.isControlling)
+        {
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                SendToServer("W", SendType.Reliable);
+            }
+            else if (Input.GetKeyDown(KeyCode.A))
+            {
+                SendToServer("A", SendType.Reliable);
+            }
+            else if (Input.GetKeyDown(KeyCode.S))
+            {
+                SendToServer("S", SendType.Reliable);
+            }
+            else if (Input.GetKeyDown(KeyCode.D))
+            {
+                SendToServer("D", SendType.Reliable);
+            }
+
+            // Make camera follow the projectile on the client
+            Camera.main.transform.rotation = transform.rotation;
+            Camera.main.transform.position = transform.position - 2 * transform.forward + 0.1f * transform.up;
+        }
+    }
+
     protected override void UpdateServer()
     {
-        if (!finished)
+        if (timeUntilDestroy <= 0)
         {
-            if (timeUntilDestroy <= 0)
+            Destroy(gameObject);
+        }
+        else
+        {
+            transform.position += transform.forward * speed * Time.deltaTime;
+            timeUntilDestroy -= Time.deltaTime;
+        }
+    }
+
+    protected void OnTriggerEnter(Collider other)
+    {
+        if (networkObject.onServer)
+        {
+            Player player = other.gameObject.GetComponent<Player>();
+
+            if (player != null && playerNetworkID != player.GetComponent<NetworkObject>().networkID)
             {
-                FinishProjectile();
+                player.GetComponent<PlayerHealth>().DamageOnServer(0.1f);
             }
-            else
-            {
-                transform.position += transform.forward * speed * Time.deltaTime;
-                timeUntilDestroy -= Time.deltaTime;
-            }
+
+            Destroy(gameObject);
         }
     }
 
     protected override void OnClientReceivedMessageRaw(byte[] data, ulong steamID)
     {
         ProjectileMessage projectileMessage = ByteSerializer.FromBytes<ProjectileMessage>(data);
-        playerSteamID = projectileMessage.playerSteamID;
+        playerNetworkID = projectileMessage.playerNetworkID;
+
+        // Find the corresponding player
+        player = GameClient.Instance.GetObjectFromServer(playerNetworkID).GetComponent<Player>();
 
         if (projectileMessage.deflect)
         {
@@ -80,41 +123,46 @@ public class Projectile : NetworkBehaviour
         }
     }
 
-    public void SetPlayerProjectile (PlayerProjectile playerProjectile)
+    protected override void OnServerReceivedMessage(string message, ulong steamID)
     {
-        this.playerProjectile = playerProjectile;
-    }
-
-    public void DeflectServer (string input)
-    {
-        if (input.Equals("W"))
+        if (message.Equals("W"))
         {
             transform.Rotate(transform.right, 90, Space.World);
         }
-        else if (input.Equals("A"))
+        else if (message.Equals("A"))
         {
             transform.Rotate(transform.up, -90, Space.World);
         }
-        else if (input.Equals("S"))
+        else if (message.Equals("S"))
         {
             transform.Rotate(transform.right, -90, Space.World);
         }
-        else if (input.Equals("D"))
+        else if (message.Equals("D"))
         {
             transform.Rotate(transform.up, 90, Space.World);
         }
 
         // Send this to the client
-        ProjectileMessage projectileMessage = new ProjectileMessage(playerSteamID, true, lineRenderer.GetPosition(lineRenderer.positionCount - 1));
+        ProjectileMessage projectileMessage = new ProjectileMessage(playerNetworkID, true, lineRenderer.GetPosition(lineRenderer.positionCount - 1));
         SendToAllClients(ByteSerializer.GetBytes(projectileMessage), SendType.Reliable);
 
         // Add this position to the line renderer
         lineRenderer.positionCount++;
     }
 
-    public void FinishProjectile()
+    protected override void OnDestroyClient()
     {
-        finished = true;
-        playerProjectile.ProjectileEnd();
+        if (player != null)
+        {
+            player.isShooting = false;
+        }
+    }
+
+    protected override void OnDestroyServer()
+    {
+        if (player != null)
+        {
+            player.isShooting = false;
+        }
     }
 }

@@ -59,6 +59,15 @@ public class PlayerHealth : NetworkBehaviour
         }
     }
 
+    public void DamageOnServer (float damage)
+    {
+        // Take damage
+        health = Mathf.Clamp01(health - damage);
+
+        // Send new health to all clients
+        SendToAllClients(BitConverter.GetBytes(health), SendType.Reliable);
+    }
+
     protected IEnumerator DieOnServer ()
     {
         // Enable rigid body physics
@@ -77,24 +86,6 @@ public class PlayerHealth : NetworkBehaviour
     {
         // Update health
         health = BitConverter.ToSingle(data, 0);
-    }
-
-    protected void OnCollisionEnter(Collision collision)
-    {
-        Projectile projectile = collision.gameObject.GetComponent<Projectile>();
-
-        // Only take damage if the projectile was shot by another player
-        if (projectile != null && projectile.playerSteamID != player.controllingSteamID)
-        {
-            // Take damage
-            health = Mathf.Clamp01(health - 0.05f);
-
-            // Send new health to all clients
-            SendToAllClients(BitConverter.GetBytes(health), SendType.Reliable);
-
-            // Destroy projectile
-            Destroy(collision.gameObject.gameObject);
-        }
     }
 
     protected void OnGUI()
